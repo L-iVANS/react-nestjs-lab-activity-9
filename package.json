@@ -1,0 +1,15 @@
+{
+  "name": "activity9-ecommerce",
+  "version": "1.0.0",
+  "description": "E-commerce application with React frontend and NestJS backend",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd activity9-ecommerce-backend && npm run start:dev",
+    "dev:frontend": "cd activity9-ecommerce-frontend && npm start",
+    "install:all": "npm install && cd activity9-ecommerce-backend && npm install && cd ../activity9-ecommerce-frontend && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
