@@ -5,27 +5,27 @@ import ArrowDown from "../../assets/icons/arrowDown.png";
 const categories = [
 	{
 		name: "Components",
-		products: ["Product 1", "Product 2", "Product 3", "Product 4", "Product 5"],
+		products: ["Graphics Card", "Memory", "Hard Disk", "Mother Board", "Power Supply"],
 	},
 	{
 		name: "Peripherals",
-		products: ["Product A", "Product B", "Product C"],
+		products: ["Mouse", "Keyboard", "Monitor"],
 	},
 	{
 		name: "Accessories",
-		products: ["Product X", "Product Y"],
+		products: ["Headphones", "Chargers"],
 	},
 	{
 		name: "Laptops",
-		products: ["Laptop 1", "Laptop 2"],
+		products: ["Chromebook", "Gaming Laptop"],
 	},
 	{
 		name: "Desktops",
-		products: ["Desktop 1", "Desktop 2"],
+		products: ["AMD Base", "Intel Base"],
 	},
 	{
 		name: "Mobile Devices",
-		products: ["Phone 1", "Phone 2"],
+		products: ["Android", "iOS"],
 	},
 ];
 

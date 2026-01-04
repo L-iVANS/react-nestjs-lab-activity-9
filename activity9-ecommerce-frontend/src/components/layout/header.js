@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import searchIcon from "../../assets/icons/search.svg";
 import cartIcon from "../../assets/icons/Cart.png";
 
-const Header = () => {
+const Header = ({ isGuest = false, isAdmin = false }) => {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
 
@@ -42,23 +42,41 @@ const Header = () => {
           </button>
         </form>
 
-        {/*Cart and Logout*/}
+        {/*Cart and Logout or Login*/}
         <div className="flex items-center gap-2 ml-20">
-          <button className="bg-[#7c3aed] text-[#ffffff] px-4 py-2 rounded flex items-center gap-2" disabled>
-            Your Cart
-            <img src={cartIcon} alt="Cart" className="w-5 h-5" />
-          </button>
-          <button
-            className="text-[#000000] px-4 py-2 rounded border-2 border-transparent hover:border-[#7c3aed] hover:text-[#7c3aed] transition-colors duration-200"
-            onClick={handleLogout}
-          >
-            Logout
-          </button>
+          {isAdmin ? (
+            <button
+              className="bg-green-700 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-green-800 transition"
+              onClick={() => navigate("/admin/add-product")}
+            >
+              Add Product
+            </button>
+          ) : !isGuest ? (
+            <button className="bg-[#7c3aed] text-[#ffffff] px-4 py-2 rounded flex items-center gap-2 hover:bg-[#5b23c3] transition" onClick={() => navigate("/cart") }>
+              Your Cart
+              <img src={cartIcon} alt="Cart" className="w-5 h-5" />
+            </button>
+          ) : null}
+          {isGuest ? (
+            <button
+              className="bg-[#7c3aed] text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-[#5b23c3] transition-colors duration-200"
+              onClick={() => navigate("/")}
+            >
+              Login
+            </button>
+          ) : (
+            <button
+              className="text-[#000000] px-4 py-2 rounded border-2 border-transparent hover:border-[#7c3aed] hover:text-[#7c3aed] transition-colors duration-200"
+              onClick={() => { setShowModal(true); }}
+            >
+              Logout
+            </button>
+          )}
         </div>
       </div>
 
       {/* Logout Confirmation Modal */}
-      {showModal && (
+      {!isGuest && showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
           <div className="bg-white rounded-lg shadow-lg p-8 w-80 animate-fadeIn">
             <h3 className="text-xl font-bold mb-4 text-center text-[#7c3aed]">Confirm Logout</h3>
@@ -66,7 +84,7 @@ const Header = () => {
             <div className="flex gap-4 justify-center">
               <button
                 className="px-4 py-2 rounded bg-[#7c3aed] text-white font-semibold hover:bg-[#5b23c3] transition-colors duration-200"
-                onClick={confirmLogout}
+                onClick={() => { setShowModal(false); navigate("/guest"); }}
               >
                 Yes, Logout
               </button>

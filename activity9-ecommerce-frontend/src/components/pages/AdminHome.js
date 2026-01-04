@@ -1,17 +1,14 @@
-import React, { useState } from "react";
+import React from "react";
 import Header from "../layout/header";
 import SideNav from "../layout/sideNav";
-import ArrowDown from "../../assets/icons/arrowDown.png";
 import ProductCard from "../product/ProductCard";
+import ArrowDown from "../../assets/icons/arrowDown.png";
 
-
-const Home = () => {
-  const [isPriceAsc, setIsPriceAsc] = useState(true);
-  const handleToggle = () => setIsPriceAsc((prev) => !prev);
-  // Pagination logic
+const AdminHome = () => {
+  const [isPriceAsc, setIsPriceAsc] = React.useState(true);
+  const [currentPage, setCurrentPage] = React.useState(1);
   const productsPerPage = 8;
-  const totalProducts = 32; // Example: 32 products
-  const [currentPage, setCurrentPage] = useState(1);
+  const totalProducts = 32;
   const totalPages = Math.ceil(totalProducts / productsPerPage);
   const products = Array.from({ length: totalProducts }, (_, idx) => ({
     name: "Product Name",
@@ -21,14 +18,14 @@ const Home = () => {
     (currentPage - 1) * productsPerPage,
     currentPage * productsPerPage
   );
-
+  const handleToggle = () => setIsPriceAsc((prev) => !prev);
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) setCurrentPage(page);
   };
 
   return (
     <>
-      <Header />
+      <Header isAdmin={true} />
       <div className="flex">
         <SideNav />
         <div className="flex-1 min-h-0 flex flex-col" style={{height: '100vh'}}>
@@ -81,4 +78,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default AdminHome;
