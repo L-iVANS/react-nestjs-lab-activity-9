@@ -11,7 +11,7 @@ const Login = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Simple role check: if admin@example.com, go to /admin, else /home
+    //if admin@example.com, go to /admin, else /home
     if (email === "admin@example.com") {
       navigate("/admin");
     } else {

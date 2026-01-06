@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import searchIcon from "../../assets/icons/search.svg";
 import cartIcon from "../../assets/icons/Cart.png";
 
-const Header = ({ isGuest = false, isAdmin = false }) => {
+const Header = ({ isGuest = false, isAdmin = false, onHome }) => {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
 
@@ -21,8 +21,22 @@ const Header = ({ isGuest = false, isAdmin = false }) => {
   return (
     <>
       <div className="w-full border-b bg-white px-8 md:px-16 lg:px-32 py-3 flex items-center justify-between">
-        {/* Ecommerce Name */}
-        <div className="text-5xl font-londrina font-bold text-[#8e4dffff] p-5">
+
+        <div
+          className="text-5xl font-londrina font-bold text-[#8e4dffff] p-5 cursor-pointer select-none"
+          onClick={() => {
+            if (isAdmin) {
+              if (onHome) onHome();
+              navigate("/admin");
+            } else if (isGuest) {
+              if (onHome) onHome();
+              navigate("/guest");
+            } else {
+              if (onHome) onHome();
+              navigate("/home");
+            }
+          }}
+        >
           TechStock
         </div>
 
@@ -44,19 +58,49 @@ const Header = ({ isGuest = false, isAdmin = false }) => {
 
         {/*Cart and Logout or Login*/}
         <div className="flex items-center gap-2 ml-20">
-          {isAdmin ? (
+          {/* Cart icon for user only */}
+          {!isAdmin && !isGuest && (
             <button
-              className="bg-green-700 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-green-800 transition"
-              onClick={() => navigate("/admin/add-product")}
+              className="p-2 rounded hover:bg-gray-200 transition"
+              onClick={() => alert('Cart clicked!')}
+              aria-label="Cart"
             >
-              Add Product
+              <img src={cartIcon} alt="Cart" className="w-7 h-7" />
             </button>
-          ) : !isGuest ? (
-            <button className="bg-[#7c3aed] text-[#ffffff] px-4 py-2 rounded flex items-center gap-2 hover:bg-[#5b23c3] transition" onClick={() => navigate("/cart") }>
-              Your Cart
-              <img src={cartIcon} alt="Cart" className="w-5 h-5" />
+          )}
+          {isAdmin && (
+            <button
+              className="bg-[#7c3aed] text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-[#5b23c3] transition-colors duration-200 mr-2"
+              onClick={() => {
+                if (onHome) onHome();
+                navigate("/admin");
+              }}
+            >
+              Home
             </button>
-          ) : null}
+          )}
+          {!isAdmin && !isGuest && (
+            <button
+              className="bg-[#7c3aed] text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-[#5b23c3] transition-colors duration-200 mr-2"
+              onClick={() => {
+                if (onHome) onHome();
+                navigate("/home");
+              }}
+            >
+              Home
+            </button>
+          )}
+          {isGuest && (
+            <button
+              className="bg-[#7c3aed] text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-[#5b23c3] transition-colors duration-200 mr-2"
+              onClick={() => {
+                if (onHome) onHome();
+                navigate("/guest");
+              }}
+            >
+              Home
+            </button>
+          )}
           {isGuest ? (
             <button
               className="bg-[#7c3aed] text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-[#5b23c3] transition-colors duration-200"
@@ -66,7 +110,7 @@ const Header = ({ isGuest = false, isAdmin = false }) => {
             </button>
           ) : (
             <button
-              className="text-[#000000] px-4 py-2 rounded border-2 border-transparent hover:border-[#7c3aed] hover:text-[#7c3aed] transition-colors duration-200"
+              className="text-[#000000] px-4 py-2 rounded border-2 border-#6b6b6bff hover:border-[#7c3aed] hover:text-[#7c3aed] transition-colors duration-200"
               onClick={() => { setShowModal(true); }}
             >
               Logout
