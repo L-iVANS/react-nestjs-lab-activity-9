@@ -81,14 +81,14 @@ export default function useAddProductForm() {
       validFiles.forEach((file) => {
         const reader = new FileReader();
         reader.onload = (event) => {
-          newPreviews.push(event.target.result);
+          const dataUrl = event.target.result;
+          newPreviews.push(dataUrl);
           filesProcessed++;
 
           if (filesProcessed === validFiles.length) {
             setNewProduct((prev) => {
               const existing = prev.images || [];
-              const newFiles = validFiles.filter(f => !existing.some(ex => ex === f));
-              return { ...prev, images: [...existing, ...newFiles] };
+              return { ...prev, images: [...existing, ...newPreviews] };
             });
             setImagePreviews((prev) => [...prev, ...newPreviews]);
           }

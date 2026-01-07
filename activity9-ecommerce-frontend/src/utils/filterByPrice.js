@@ -1,10 +1,9 @@
-// src/utils/filterByPrice.js
 
 /**
  * Filters and sorts products by price.
  * @param {Array} products - The array of product objects.
  * @param {boolean} isAsc - If true, sort ascending; if false, descending.
- * @returns {Array} Sorted array of products by price.
+ * @returns {Array} 
  */
 export default function filterByPrice(products, isAsc = true) {
   if (!Array.isArray(products)) return [];

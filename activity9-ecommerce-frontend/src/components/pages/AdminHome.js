@@ -39,7 +39,14 @@ const AdminHome = () => {
   // Filter and sort products by price
   const { filteredProducts } = useProductFilter(products, selectedCategory, selectedProduct, currentPage, productsPerPage);
   const sortedProducts = filterByPrice(filteredProducts, isPriceAsc);
-  const paginatedProducts = sortedProducts.slice(
+  // Sort to put 0 quantity items at the end
+  const productsWithAvailability = [...sortedProducts].sort((a, b) => {
+    if ((a.quantity || 1) === 0 && (b.quantity || 1) === 0) return 0;
+    if ((a.quantity || 1) === 0) return 1;
+    if ((b.quantity || 1) === 0) return -1;
+    return 0;
+  });
+  const paginatedProducts = productsWithAvailability.slice(
     (currentPage - 1) * productsPerPage,
     currentPage * productsPerPage
   );
@@ -126,7 +133,7 @@ const AdminHome = () => {
   return (
     <>
       <Header isAdmin={true} onHome={handleHome} />
-      <div className="flex">
+      <div className="flex bg-gradient-to-br from-indigo-100 via-white to-indigo-200 min-h-screen rounded-3xl shadow-2xl p-4 md:p-8 transition-all duration-300">
         <SideNav
           selectedCategory={selectedCategory}
           setSelectedCategory={setSelectedCategory}
@@ -135,7 +142,7 @@ const AdminHome = () => {
           onArchiveClick={() => setShowArchive(true)}
           isAdmin={true}
         />
-        <div className="flex-1 min-h-0 flex flex-col relative" style={{height: '100vh'}}>
+        <div className="flex-1 min-h-0 flex flex-col relative bg-white/80 rounded-3xl shadow-xl mx-2 md:mx-6 p-4 md:p-8 transition-all duration-300">
           {!showArchive ? (
             <>
               <div className="flex items-center justify-between m-6">

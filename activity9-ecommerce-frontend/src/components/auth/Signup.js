@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 
 const Signup = () => {
   return (
-    <div className="flex flex-col gap-4 justify-center items-center h-screen">
-      <div className="w-96 bg-[#FAFBFC] border border-[#D1D9E0] p-8 rounded-lg shadow-sm">
+    <div className="flex flex-col gap-4 justify-center items-center h-screen bg-gradient-to-r from-indigo-100 via-white to-indigo-200">
+      <div className="w-96 bg-white/90 border border-[#D1D9E0] p-8 shadow-sm" style={{ borderTopLeftRadius: 0, borderTopRightRadius: 0, borderBottomLeftRadius: 0, borderBottomRightRadius: '1rem' }}>
         <img
           src="/logo.png"
           alt="Logo"
@@ -19,18 +19,25 @@ const Signup = () => {
         <hr className=" bg-[#D1D9E0] mb-6" />
 
         <form className="text-left">
-          <div className="mb-4">
-            <label
-              className="block text-sm font-medium mb-2"
-            >
-              Full Name <span className="text-red-500">*</span>
-            </label>
-            <input
-              className="w-full px-3 py-2 border border-[#D1D9E0] rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              type="text"
-              id="fullName"
-              placeholder="Enter your full name"
-            />
+          <div className="mb-4 flex gap-2">
+            <div className="w-1/2">
+              <label className="block text-sm font-medium mb-2">First Name <span className="text-red-500">*</span></label>
+              <input
+                className="w-full px-3 py-2 border border-[#D1D9E0] rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                type="text"
+                id="firstName"
+                placeholder="First name"
+              />
+            </div>
+            <div className="w-1/2">
+              <label className="block text-sm font-medium mb-2">Last Name <span className="text-red-500">*</span></label>
+              <input
+                className="w-full px-3 py-2 border border-[#D1D9E0] rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                type="text"
+                id="lastName"
+                placeholder="Last name"
+              />
+            </div>
           </div>
           <div className="mb-4">
             <label className="block text-sm font-medium mb-2">
@@ -73,7 +80,7 @@ const Signup = () => {
         </form>
       </div>
 
-      <div className="w-96 bg-[#FAFBFC] border border-[#D1D9E0] p-4 rounded-lg shadow-sm">
+      <div className="w-96 bg-white/90 border border-[#D1D9E0] p-4 shadow-sm" style={{ borderTopLeftRadius: 0, borderTopRightRadius: 0, borderBottomLeftRadius: 0, borderBottomRightRadius: '1rem' }}>
         <p className="text-center text-sm">
           Already have an account?{" "}
           <Link to="/" className="text-blue-500 hover:underline">

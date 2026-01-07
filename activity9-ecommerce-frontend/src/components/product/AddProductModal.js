@@ -27,8 +27,8 @@ const AddProductModal = ({
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-        <div className="bg-white rounded-lg shadow-lg p-8 relative" style={{ background: 'var(--bg-card)', width: '600px', maxWidth: '95vw' }}>
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-r from-indigo-100 via-white to-indigo-200 bg-opacity-95">
+        <div className="bg-white/90 shadow-xl p-8 relative" style={{ borderRadius: '0 0 1rem 0', width: '600px', maxWidth: '95vw' }}>
           <button
             className="absolute top-2 right-2 text-gray-400 hover:text-gray-700 text-2xl font-bold"
             onClick={onClose}

@@ -1,23 +1,24 @@
 import React from "react";
+import Toast from "../common/Toast";
+import AddToCartModal from "../modals/AddToCartModal";
 import addToCartIcon from "../../assets/icons/qlementine-icons_add-to-cart-16.png";
 
-const ProductCard = ({ name, price, isGuest, isAdmin, images, onAddToCart, onRemove }) => {
+const ProductCard = ({ productName, productPrice, quantity, images, isAdmin, isGuest, onRemove, onAddToCart }) => {
+    const [toast, setToast] = React.useState(null);
+  const [showAddModal, setShowAddModal] = React.useState(false);
   const [currentImg, setCurrentImg] = React.useState(0);
-  React.useEffect(() => { setCurrentImg(0); }, [images]);
-
-  const [quantity, setQuantity] = React.useState(1);
-  const [productName, setProductName] = React.useState(name);
-  const [productPrice, setProductPrice] = React.useState(price);
   const [editing, setEditing] = React.useState(false);
   const [tempQty, setTempQty] = React.useState(quantity);
   const [tempName, setTempName] = React.useState(productName);
   const [tempPrice, setTempPrice] = React.useState(productPrice);
 
+  const validImages = images && Array.isArray(images) ? images.filter(img => img) : [];
+
   const handleRemove = () => {
     if (typeof onRemove === 'function') {
       onRemove();
     } else {
-      alert("Remove item clicked! (No handler provided)");
+      setToast({ message: "Remove item clicked! (No handler provided)", type: "info" });
     }
   };
 
@@ -34,11 +35,9 @@ const ProductCard = ({ name, price, isGuest, isAdmin, images, onAddToCart, onRem
   };
 
   const handleConfirm = () => {
-    setQuantity(tempQty);
-    setProductName(tempName);
-    setProductPrice(tempPrice);
+    // TODO: Notify parent of changes if needed, e.g., via a prop callback
     setEditing(false);
-    alert(`Product updated!`);
+    setToast({ message: "Product updated!", type: "success" });
   };
 
   const handleCancel = () => {
@@ -49,15 +48,32 @@ const ProductCard = ({ name, price, isGuest, isAdmin, images, onAddToCart, onRem
   };
 
   return (
-    <div className="bg-gray-100 rounded-lg p-6 flex flex-col items-center justify-end shadow-sm w-full h-full min-h-0 relative" style={{ width: '260px' }}>
+    <>
+      {toast && (
+        <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
+      )}
+      <div
+      className="rounded-xl flex flex-col items-center justify-between w-full h-full min-h-0 relative transition-transform duration-200 group"
+      style={{
+        width: '260px',
+        background: 'linear-gradient(135deg, #f8fafc 60%, #e0e7ff 100%)',
+        boxShadow: '0 4px 24px 0 rgba(99,102,241,0.10)',
+        border: '1.5px solid #e0e7ff',
+        padding: '1.5rem 1.25rem 1.25rem 1.25rem',
+        cursor: 'pointer',
+        transition: 'box-shadow 0.2s, transform 0.2s',
+      }}
+      onMouseEnter={e => e.currentTarget.style.boxShadow = '0 8px 32px 0 rgba(99,102,241,0.18)'}
+      onMouseLeave={e => e.currentTarget.style.boxShadow = '0 4px 24px 0 rgba(99,102,241,0.10)'}
+    >
       {/* Product Images */}
-      {Array.isArray(images) && images.length > 0 && (
-        <div className="flex items-center justify-center mb-2 mt-2 gap-2" style={{ width: '200px', height: '220px', margin: '0 auto', position: 'relative' }}>
-          {images.length > 1 && (
+      {validImages && validImages.length > 0 && (
+        <div className="flex items-center justify-center mb-3 mt-1 gap-2 bg-white rounded-2xl shadow-lg border-2 border-indigo-100 group-hover:border-indigo-300 transition-all duration-200" style={{ width: '180px', height: '180px', margin: '0 auto', position: 'relative', overflow: 'hidden' }}>
+          {validImages.length > 1 && (
             <button
               className="px-2 py-1 text-2xl font-bold text-gray-600 hover:text-gray-900 z-10 flex-shrink-0"
               style={{ height: '220px', display: 'flex', alignItems: 'center', background: 'none', borderRadius: 0, boxShadow: 'none', position: 'absolute', left: 0, top: 0, bottom: 0 }}
-              onClick={e => { e.stopPropagation(); setCurrentImg((prev) => (prev - 1 + images.length) % images.length); }}
+              onClick={e => { e.stopPropagation(); setCurrentImg((prev) => (prev - 1 + validImages.length) % validImages.length); }}
               aria-label="Previous image"
               type="button"
             >
@@ -65,15 +81,15 @@ const ProductCard = ({ name, price, isGuest, isAdmin, images, onAddToCart, onRem
             </button>
           )}
           <img
-            src={images[currentImg]}
+            src={validImages[currentImg]}
             alt={`Product ${productName} image ${currentImg + 1}`}
-            style={{ width: '200px', height: '220px', objectFit: 'contain', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'white', display: 'block', margin: '0 auto' }}
+            style={{ width: '160px', height: '160px', objectFit: 'contain', borderRadius: '8px', background: 'white', display: 'block', margin: '0 auto', transition: 'transform 0.2s', boxShadow: '0 1px 6px 0 rgba(99,102,241,0.06)' }}
           />
-          {images.length > 1 && (
+          {validImages.length > 1 && (
             <button
               className="px-2 py-1 text-2xl font-bold text-gray-600 hover:text-gray-900 z-10 flex-shrink-0"
               style={{ height: '220px', display: 'flex', alignItems: 'center', background: 'none', borderRadius: 0, boxShadow: 'none', position: 'absolute', right: 0, top: 0, bottom: 0 }}
-              onClick={e => { e.stopPropagation(); setCurrentImg((prev) => (prev + 1) % images.length); }}
+              onClick={e => { e.stopPropagation(); setCurrentImg((prev) => (prev + 1) % validImages.length); }}
               aria-label="Next image"
               type="button"
             >
@@ -85,8 +101,8 @@ const ProductCard = ({ name, price, isGuest, isAdmin, images, onAddToCart, onRem
       {/* Edit button at top right for admin */}
       {isAdmin && !editing && (
         <button
-          className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700 text-xs whitespace-nowrap z-10 flex items-center justify-center"
-          onClick={handleRemove}
+          className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full hover:bg-red-700 text-xs whitespace-nowrap z-10 flex items-center justify-center shadow-md transition-all duration-200"
+          onClick={e => { e.stopPropagation(); handleRemove(); }}
           aria-label="Remove"
           style={{ width: '32px', height: '32px', padding: 0 }}
         >
@@ -97,6 +113,10 @@ const ProductCard = ({ name, price, isGuest, isAdmin, images, onAddToCart, onRem
       )}
       {/* Move product name closer to image */}
       <div className="mb-2"></div>
+      {/* Not Available badge */}
+      {quantity === 0 && (
+        <div className="mb-2 text-red-600 font-semibold text-center w-full text-sm">Not Available</div>
+      )}
       {/* Editable fields for admin */}
       {isAdmin && editing ? (
         <>
@@ -104,25 +124,25 @@ const ProductCard = ({ name, price, isGuest, isAdmin, images, onAddToCart, onRem
             type="text"
             value={tempName}
             onChange={e => setTempName(e.target.value)}
-            className="mb-2 text-base font-semibold border rounded px-2 py-1 w-full"
+            className="mb-2 text-base font-semibold border rounded-full px-3 py-1 w-full shadow-sm"
           />
           <input
             type="text"
             value={tempPrice}
             onChange={e => setTempPrice(e.target.value)}
-            className="mb-2 text-sm border rounded px-2 py-1 w-full"
+            className="mb-2 text-sm border rounded-full px-3 py-1 w-full shadow-sm"
           />
         </>
       ) : (
         <>
-          <div className="mb-2 text-base font-semibold text-center w-full">{productName}</div>
+          <div className="mb-1 text-lg font-bold text-center w-full text-gray-800 truncate rounded-full bg-indigo-50/60 px-3 py-1 shadow-inner" title={productName}>{productName}</div>
           {/* Show price for guests and users */}
           {!isAdmin && (
-            <div className="text-sm font-semibold text-center w-full mb-2">₱{productPrice}</div>
+            <div className="text-base font-semibold text-center w-full mb-2 text-indigo-600">₱{Number(productPrice).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</div>
           )}
         </>
       )}
-      <div className="flex items-center gap-2 justify-center w-full">
+      <div className="flex items-center gap-2 justify-center w-full mt-2">
         {isAdmin ? (
           <>
             <div className="flex flex-col gap-2 max-w-full items-center w-full">
@@ -155,7 +175,7 @@ const ProductCard = ({ name, price, isGuest, isAdmin, images, onAddToCart, onRem
                     </>
                   )}
                 </div>
-                <div className="text-sm font-semibold ml-2">₱{productPrice}</div>
+                <div className="text-sm font-semibold ml-2">₱{Number(productPrice).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</div>
               </div>
               {/* Edit button directly under Qty for admin */}
               {!editing && (
@@ -172,27 +192,59 @@ const ProductCard = ({ name, price, isGuest, isAdmin, images, onAddToCart, onRem
         ) : (
           <>
             <button
-              className={`text-white font-bold py-2 px-6 rounded transition ${isGuest ? 'opacity-80 cursor-not-allowed' : 'hover:brightness-110'}`}
-              style={{ backgroundColor: 'var(--accent-color)' }}
+              className={`text-white font-bold py-2 px-6 rounded-full shadow-lg transition-all duration-200 ${isGuest ? 'opacity-80 cursor-not-allowed' : 'hover:bg-indigo-700 bg-indigo-600 scale-105'}`}
+              style={{ backgroundColor: '#6366f1', fontSize: '1rem', letterSpacing: '0.01em', boxShadow: '0 2px 12px 0 #6366f1aa' }}
               disabled={isGuest}
-              onClick={isGuest ? undefined : () => alert('Buy Now clicked!')}
             >
               Buy Now
             </button>
             {!isGuest && (
-              <span
-                className="bg-gray-300 rounded p-2 hover:bg-gray-400 transition cursor-pointer"
-                onClick={onAddToCart}
-                role="button"
-                tabIndex={0}
-              >
-                <img src={addToCartIcon} alt="Add to Cart" className="w-6 h-6" />
-              </span>
+              <>
+                <span
+                  className={`rounded-full p-2 transition cursor-pointer border-2 border-indigo-300 shadow-lg ${quantity === 0 ? 'bg-gray-100 opacity-50 cursor-not-allowed' : 'bg-indigo-100 hover:bg-indigo-200 scale-110'}`}
+                  onClick={e => {
+                    e.stopPropagation();
+                    if (quantity > 0) {
+                      setShowAddModal(true);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  title="Add to Cart"
+                  style={{
+                    marginLeft: '6px',
+                    marginRight: '2px',
+                    background: '#f1f5f9',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    border: '2px solid #6366f1',
+                    boxShadow: '0 2px 12px 0 #6366f1aa',
+                  }}
+                >
+                  <img src={addToCartIcon} alt="Add to Cart" className="w-6 h-6" style={{ filter: 'drop-shadow(0 0 2px #6366f1) drop-shadow(0 0 6px #6366f1aa)' }} />
+                </span>
+                <AddToCartModal
+                  open={showAddModal}
+                  onClose={e => {
+                    setShowAddModal(false);
+                  }}
+                  onConfirm={qtyNum => {
+                    if (typeof onAddToCart === 'function') {
+                      onAddToCart(qtyNum, { name: productName, price: productPrice, images });
+                    }
+                    setShowAddModal(false);
+                  }}
+                  maxQty={quantity}
+                  productName={productName}
+                />
+              </>
             )}
           </>
         )}
       </div>
     </div>
+    </>
   );
 };
 

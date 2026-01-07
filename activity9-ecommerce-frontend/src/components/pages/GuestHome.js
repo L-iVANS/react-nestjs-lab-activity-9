@@ -1,5 +1,6 @@
 // Removed archive logic and references
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "../layout/header";
 import SideNav from "../layout/sideNav";
 import ProductCard from "../product/ProductCard";
@@ -9,6 +10,7 @@ import filterByPrice from "../../utils/filterByPrice";
 import ArrowDown from "../../assets/icons/arrowDown.png";
 
 const GuestHome = () => {
+  const navigate = useNavigate();
   const [isPriceAsc, setIsPriceAsc] = React.useState(true);
   const [selectedCategory, setSelectedCategory] = React.useState("");
   const [selectedProduct, setSelectedProduct] = React.useState("");
@@ -47,10 +49,15 @@ const GuestHome = () => {
     setCurrentPage(1);
   };
 
+  // Handler for product click
+  const handleProductClick = (product) => {
+    navigate('/product-detail', { state: { product, isAdmin: false, isGuest: true } });
+  };
+
   return (
     <>
       <Header isGuest={true} onHome={handleHome} />
-      <div className="flex">
+      <div className="flex bg-gradient-to-br from-indigo-100 via-white to-indigo-200 min-h-screen rounded-3xl shadow-2xl p-4 md:p-8 transition-all duration-300">
         <SideNav
           selectedCategory={selectedCategory}
           setSelectedCategory={setSelectedCategory}
@@ -58,7 +65,7 @@ const GuestHome = () => {
           setSelectedProduct={setSelectedProduct}
           isAdmin={false}
         />
-        <div className="flex-1 min-h-0 flex flex-col" style={{height: '100vh'}}>
+        <div className="flex-1 min-h-0 flex flex-col bg-white/80 rounded-3xl shadow-xl mx-2 md:mx-6 p-4 md:p-8 transition-all duration-300">
           <div className="m-6 text-lg font-bold flex items-center gap-2 select-none cursor-pointer w-fit" onClick={handleToggle}>
             Filter by Price
             <img

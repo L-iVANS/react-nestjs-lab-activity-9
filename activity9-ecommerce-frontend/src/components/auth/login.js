@@ -20,8 +20,8 @@ const Login = () => {
   };
 
   return (
-    <div className="flex flex-col gap-4 justify-center items-center h-screen ">
-      <div className="w-96 bg-[#FAFBFC] border border-[#D1D9E0] p-8 rounded-lg shadow-sm">
+    <div className="flex flex-col gap-4 justify-center items-center h-screen bg-gradient-to-r from-indigo-100 via-white to-indigo-200">
+      <div className="w-96 bg-white/90 border border-[#D1D9E0] p-8 shadow-sm" style={{ borderTopLeftRadius: 0, borderTopRightRadius: 0, borderBottomLeftRadius: 0, borderBottomRightRadius: '1rem' }}>
         <img
           src="/logo.png"
           alt="Logo"
@@ -105,7 +105,7 @@ const Login = () => {
         </form>
       </div>
 
-      <div className="w-96 bg-[#FAFBFC] border border-[#D1D9E0] p-4 rounded-lg shadow-sm flex flex-col gap-2 items-center">
+      <div className="w-96 bg-white/90 border border-[#D1D9E0] p-4 shadow-sm flex flex-col gap-2 items-center" style={{ borderTopLeftRadius: 0, borderTopRightRadius: 0, borderBottomLeftRadius: 0, borderBottomRightRadius: '1rem' }}>
         <p className="text-center text-sm">
           Don't have an account?{" "}
           <Link to="/signup" className="text-blue-500 hover:underline">
