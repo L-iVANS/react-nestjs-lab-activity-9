@@ -1,4 +1,6 @@
 import React from "react";
+import { useAuth } from "../../context/AuthContext";
+import { createProduct, updateProduct } from "../../services/productService";
 import Header from "../layout/header";
 import SideNav from "../layout/sideNav";
 import Pagination from "../layout/Pagination";
@@ -12,6 +14,7 @@ import useAddProductForm from "../../hooks/useAddProductForm";
 import useArchiveConfirm from "../../hooks/useArchiveConfirm";
 import ArchiveConfirmModal from "../modals/ArchiveConfirmModal";
 import ArchivedProducts from "../archive/ArchivedProducts";
+import { useTheme } from "../../context/ThemeContext";
 
 const categories = [
   { name: "Components", products: ["Graphics Card", "Memory", "Hard Disk", "Mother Board", "Power Supply"] },
@@ -23,15 +26,27 @@ const categories = [
 ];
 
 const AdminHome = () => {
+  const { token, user } = useAuth();
+  const { isDarkMode } = useTheme();
   const [isPriceAsc, setIsPriceAsc] = React.useState(true);
   const [selectedCategory, setSelectedCategory] = React.useState("");
   const [selectedProduct, setSelectedProduct] = React.useState("");
   const [showArchive, setShowArchive] = React.useState(false);
   const [currentPage, setCurrentPage] = React.useState(1);
+  const [toast, setToast] = React.useState(null);
   const productsPerPage = 8;
 
+  // Debug: Check if token exists
+  React.useEffect(() => {
+    console.log('AdminHome - Token:', token ? 'exists' : 'missing');
+    console.log('AdminHome - User:', user);
+    if (!token) {
+      console.error('No authentication token found!');
+    }
+  }, [token, user]);
+
   // Use custom hooks for business logic
-  const { products, setProducts, archivedProducts, setArchivedProducts, addProduct, archiveProduct, restoreProduct } = useProducts();
+  const { products, setProducts, archivedProducts, setArchivedProducts, addProduct, archiveProduct, restoreProduct, refreshProducts, loading } = useProducts(token);
   const formState = useAddProductForm();
   const { archiveConfirm, openArchiveConfirm, confirmArchive, cancelArchive, setArchiveConfirm } = useArchiveConfirm();
 
@@ -41,9 +56,11 @@ const AdminHome = () => {
   const sortedProducts = filterByPrice(filteredProducts, isPriceAsc);
   // Sort to put 0 quantity items at the end
   const productsWithAvailability = [...sortedProducts].sort((a, b) => {
-    if ((a.quantity || 1) === 0 && (b.quantity || 1) === 0) return 0;
-    if ((a.quantity || 1) === 0) return 1;
-    if ((b.quantity || 1) === 0) return -1;
+    const aStock = a.stock || a.quantity || 0;
+    const bStock = b.stock || b.quantity || 0;
+    if (aStock === 0 && bStock === 0) return 0;
+    if (aStock === 0) return 1;
+    if (bStock === 0) return -1;
     return 0;
   });
   const paginatedProducts = productsWithAvailability.slice(
@@ -78,22 +95,45 @@ const AdminHome = () => {
     if (page >= 1 && page <= totalPages) setCurrentPage(page);
   };
 
-  const handleAddProduct = (e) => {
+  const handleAddProduct = async (e) => {
     e.preventDefault();
     if (!formState.validateForm()) return;
 
+    // Check for duplicate product name
+    if (formState.checkDuplicateName(formState.newProduct.name)) {
+      setToast({ message: "Product with this name already exists!", type: "error" });
+      return;
+    }
+
     formState.setLoading(true);
-    setTimeout(() => {
-      const productToAdd = { ...formState.newProduct, images: formState.imagePreviews };
-      addProduct(productToAdd);
+    try {
+      const productData = {
+        name: formState.newProduct.name,
+        description: formState.newProduct.description || '',
+        price: parseFloat(formState.newProduct.price),
+        category: formState.newProduct.category,
+        productType: formState.newProduct.product,
+        stock: parseInt(formState.newProduct.quantity) || 0,
+        images: formState.imagePreviews
+      };
+
+      const createdProduct = await createProduct(productData, token);
+      
+      // Add to local state
+      addProduct(createdProduct);
+      
       formState.setLoading(false);
       formState.setSuccess(true);
+      setToast({ message: "Product added successfully!", type: "success" });
       setTimeout(() => {
         formState.setShowModal(false);
         formState.setSuccess(false);
         formState.resetForm();
       }, 1200);
-    }, 1000);
+    } catch (error) {
+      formState.setLoading(false);
+      setToast({ message: error.message || "Failed to add product", type: "error" });
+    }
   };
 
   const handleRemoveProduct = (idx) => {
@@ -119,9 +159,36 @@ const AdminHome = () => {
   };
 
   const handleDeleteProduct = (idx) => {
+    const productToDelete = archivedProducts[idx];
+    if (!productToDelete) return;
+    // Archive deletion is handled via the backend now
+    // Just remove from local state
     const updatedArchived = archivedProducts.filter((_, i) => i !== idx);
     setArchivedProducts(updatedArchived);
-    localStorage.setItem('archivedProducts', JSON.stringify(updatedArchived));
+  };
+
+  const handleUpdateProduct = async (idx, updates) => {
+    try {
+      const product = paginatedProducts[idx];
+      if (!product || !product.id) return;
+
+      const updatedData = {
+        name: updates.name,
+        price: parseFloat(updates.price),
+        stock: parseInt(updates.stock) || 0,
+        productType: product.productType,
+        description: product.description,
+        category: product.category
+      };
+
+      const updatedProduct = await updateProduct(product.id, updatedData, token);
+      
+      // Refresh products from backend to get latest stock
+      await refreshProducts();
+      setToast({ message: "Product updated successfully!", type: "success" });
+    } catch (error) {
+      setToast({ message: error.message || "Failed to update product", type: "error" });
+    }
   };
 
   const handleHome = () => {
@@ -133,7 +200,11 @@ const AdminHome = () => {
   return (
     <>
       <Header isAdmin={true} onHome={handleHome} />
-      <div className="flex bg-gradient-to-br from-indigo-100 via-white to-indigo-200 min-h-screen rounded-3xl shadow-2xl p-4 md:p-8 transition-all duration-300">
+      <div className={`flex min-h-screen rounded-3xl shadow-2xl p-4 md:p-8 transition-all duration-300 ${
+        isDarkMode 
+          ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' 
+          : 'bg-gradient-to-br from-indigo-100 via-white to-indigo-200'
+      }`}>
         <SideNav
           selectedCategory={selectedCategory}
           setSelectedCategory={setSelectedCategory}
@@ -142,16 +213,23 @@ const AdminHome = () => {
           onArchiveClick={() => setShowArchive(true)}
           isAdmin={true}
         />
-        <div className="flex-1 min-h-0 flex flex-col relative bg-white/80 rounded-3xl shadow-xl mx-2 md:mx-6 p-4 md:p-8 transition-all duration-300">
+        <div className={`flex-1 min-h-0 flex flex-col relative rounded-3xl shadow-xl mx-2 md:mx-6 p-4 md:p-8 transition-all duration-300 ${
+          isDarkMode ? 'bg-gray-800/90' : 'bg-white/80'
+        }`}>
           {!showArchive ? (
             <>
               <div className="flex items-center justify-between m-6">
-                <div className="text-lg font-bold flex items-center gap-2 select-none cursor-pointer w-fit" onClick={handleToggle}>
+                <div className={`text-lg font-bold flex items-center gap-2 select-none cursor-pointer w-fit px-4 py-2 rounded-xl shadow-sm transition ${
+                  isDarkMode 
+                    ? 'bg-gray-700 border border-gray-600 text-indigo-400 hover:bg-gray-600' 
+                    : 'bg-indigo-50 border border-indigo-100 hover:bg-indigo-100'
+                }`} onClick={handleToggle}>
                   Filter by Price
                   <img
                     src={ArrowDown}
                     alt="Toggle Arrow"
                     className={`w-3 h-3 transition-transform duration-200 ${isPriceAsc ? '' : 'rotate-180'}`}
+                    style={{ filter: isDarkMode ? 'brightness(0) invert(1)' : 'none' }}
                   />
                 </div>
                 <button
@@ -165,6 +243,7 @@ const AdminHome = () => {
                 products={paginatedProducts}
                 onRemove={handleRemoveProduct}
                 isAdmin={true}
+                onUpdate={handleUpdateProduct}
               />
               {totalPages > 1 && (
                 <Pagination

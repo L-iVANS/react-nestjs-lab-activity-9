@@ -3,7 +3,7 @@ import Toast from "../common/Toast";
 import AddToCartModal from "../modals/AddToCartModal";
 import addToCartIcon from "../../assets/icons/qlementine-icons_add-to-cart-16.png";
 
-const ProductCard = ({ productName, productPrice, quantity, images, isAdmin, isGuest, onRemove, onAddToCart }) => {
+const ProductCard = ({ productId, productName, productPrice, quantity, images, isAdmin, isGuest, onRemove, onAddToCart, onUpdate }) => {
     const [toast, setToast] = React.useState(null);
   const [showAddModal, setShowAddModal] = React.useState(false);
   const [currentImg, setCurrentImg] = React.useState(0);
@@ -11,6 +11,15 @@ const ProductCard = ({ productName, productPrice, quantity, images, isAdmin, isG
   const [tempQty, setTempQty] = React.useState(quantity);
   const [tempName, setTempName] = React.useState(productName);
   const [tempPrice, setTempPrice] = React.useState(productPrice);
+
+  // Debug logging for images
+  React.useEffect(() => {
+    console.log('ProductCard received images:', images);
+    console.log('Images type:', typeof images, 'Is array:', Array.isArray(images));
+    if (images && images.length > 0) {
+      console.log('First image preview:', images[0]?.substring(0, 100));
+    }
+  }, [images]);
 
   const validImages = images && Array.isArray(images) ? images.filter(img => img) : [];
 
@@ -30,12 +39,18 @@ const ProductCard = ({ productName, productPrice, quantity, images, isAdmin, isG
   };
 
   const handleQtyInput = (e) => {
-    const val = Math.max(1, Number(e.target.value));
+    const val = Math.max(0, Number(e.target.value));
     setTempQty(val);
   };
 
   const handleConfirm = () => {
-    // TODO: Notify parent of changes if needed, e.g., via a prop callback
+    if (typeof onUpdate === 'function') {
+      onUpdate({
+        name: tempName,
+        price: tempPrice,
+        stock: tempQty
+      });
+    }
     setEditing(false);
     setToast({ message: "Product updated!", type: "success" });
   };
@@ -151,7 +166,7 @@ const ProductCard = ({ productName, productPrice, quantity, images, isAdmin, isG
                   <label className="text-sm font-medium">Qty:</label>
                   <input
                     type="number"
-                    min="1"
+                    min="0"
                     value={editing ? tempQty : quantity}
                     onChange={editing ? handleQtyInput : undefined}
                     className="w-16 px-2 py-1 border rounded"
@@ -192,16 +207,16 @@ const ProductCard = ({ productName, productPrice, quantity, images, isAdmin, isG
         ) : (
           <>
             <button
-              className={`text-white font-bold py-2 px-6 rounded-full shadow-lg transition-all duration-200 ${isGuest ? 'opacity-80 cursor-not-allowed' : 'hover:bg-indigo-700 bg-indigo-600 scale-105'}`}
-              style={{ backgroundColor: '#6366f1', fontSize: '1rem', letterSpacing: '0.01em', boxShadow: '0 2px 12px 0 #6366f1aa' }}
-              disabled={isGuest}
+              className={`text-white font-bold py-2 px-6 rounded-full shadow-lg transition-all duration-200 ${isGuest || quantity === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-indigo-700 bg-indigo-600 scale-105'}`}
+              style={{ backgroundColor: quantity === 0 ? '#d1d5db' : '#6366f1', fontSize: '1rem', letterSpacing: '0.01em', boxShadow: '0 2px 12px 0 #6366f1aa' }}
+              disabled={isGuest || quantity === 0}
             >
               Buy Now
             </button>
             {!isGuest && (
               <>
                 <span
-                  className={`rounded-full p-2 transition cursor-pointer border-2 border-indigo-300 shadow-lg ${quantity === 0 ? 'bg-gray-100 opacity-50 cursor-not-allowed' : 'bg-indigo-100 hover:bg-indigo-200 scale-110'}`}
+                  className={`rounded-full p-2 transition border-2 border-indigo-300 shadow-lg ${quantity === 0 ? 'bg-gray-200 opacity-40 cursor-not-allowed' : 'bg-indigo-100 hover:bg-indigo-200 scale-110 cursor-pointer'}`}
                   onClick={e => {
                     e.stopPropagation();
                     if (quantity > 0) {
@@ -210,19 +225,19 @@ const ProductCard = ({ productName, productPrice, quantity, images, isAdmin, isG
                   }}
                   role="button"
                   tabIndex={0}
-                  title="Add to Cart"
+                  title={quantity === 0 ? "Item not available" : "Add to Cart"}
                   style={{
                     marginLeft: '6px',
                     marginRight: '2px',
-                    background: '#f1f5f9',
+                    background: quantity === 0 ? '#e5e7eb' : '#f1f5f9',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    border: '2px solid #6366f1',
-                    boxShadow: '0 2px 12px 0 #6366f1aa',
+                    border: quantity === 0 ? '2px solid #d1d5db' : '2px solid #6366f1',
+                    boxShadow: quantity === 0 ? 'none' : '0 2px 12px 0 #6366f1aa',
                   }}
                 >
-                  <img src={addToCartIcon} alt="Add to Cart" className="w-6 h-6" style={{ filter: 'drop-shadow(0 0 2px #6366f1) drop-shadow(0 0 6px #6366f1aa)' }} />
+                  <img src={addToCartIcon} alt="Add to Cart" className="w-6 h-6" style={{ filter: quantity === 0 ? 'grayscale(100%)' : 'drop-shadow(0 0 2px #6366f1) drop-shadow(0 0 6px #6366f1aa)' }} />
                 </span>
                 <AddToCartModal
                   open={showAddModal}
@@ -231,7 +246,7 @@ const ProductCard = ({ productName, productPrice, quantity, images, isAdmin, isG
                   }}
                   onConfirm={qtyNum => {
                     if (typeof onAddToCart === 'function') {
-                      onAddToCart(qtyNum, { name: productName, price: productPrice, images });
+                      onAddToCart(qtyNum, { name: productName, price: productPrice, images, stock: quantity, quantity: quantity });
                     }
                     setShowAddModal(false);
                   }}

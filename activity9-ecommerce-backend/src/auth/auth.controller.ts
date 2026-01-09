@@ -1,0 +1,32 @@
+import { Controller, Post, Body, Get } from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { UserRole } from '../utils/enums/user-role.enum';
+
+@Controller('auth')
+export class AuthController {
+  constructor(private readonly authService: AuthService) {}
+
+  @Post('signup')
+  async signup(
+    @Body('email') email: string,
+    @Body('password') password: string,
+    @Body('firstName') firstName: string,
+    @Body('lastName') lastName: string,
+    @Body('role') role?: UserRole,
+  ) {
+    return this.authService.signup(email, password, firstName, lastName, role);
+  }
+
+  @Post('login')
+  async login(
+    @Body('email') email: string,
+    @Body('password') password: string,
+  ) {
+    return this.authService.login(email, password);
+  }
+
+  @Get('debug/users')
+  async debugGetUsers() {
+    return this.authService.getAllUsers();
+  }
+}

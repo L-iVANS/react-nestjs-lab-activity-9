@@ -4,10 +4,12 @@ export default function useProductFilter(products, selectedCategory, selectedPro
   let filteredProducts = products;
   if (selectedCategory && selectedProduct) {
     filteredProducts = products.filter(
-      p => p.category === selectedCategory && p.product === selectedProduct
+      p => p.category === selectedCategory && p.productType === selectedProduct
     );
   } else if (selectedCategory && !selectedProduct) {
-    filteredProducts = [];
+    filteredProducts = products.filter(
+      p => p.category === selectedCategory
+    );
   }
 
   const paginatedProducts = useMemo(() =>

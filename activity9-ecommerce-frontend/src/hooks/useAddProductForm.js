@@ -131,6 +131,13 @@ export default function useAddProductForm() {
     return Object.keys(newErrors).length === 0;
   };
 
+  const checkDuplicateName = (name) => {
+    // Duplicate check is now handled by backend API
+    // Keep this function for compatibility but always return false
+    // as the backend will validate uniqueness
+    return false;
+  };
+
   return {
     showModal,
     setShowModal,
@@ -151,5 +158,6 @@ export default function useAddProductForm() {
     removeImage,
     validateForm,
     resetForm,
+    checkDuplicateName,
   };
 }

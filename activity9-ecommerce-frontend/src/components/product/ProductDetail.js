@@ -1,14 +1,28 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '../../context/ThemeContext';
 
 
 const ProductDetail = ({ product }) => {
+  const { isDarkMode } = useTheme();
   const [quantity, setQuantity] = useState(1);
   const [currentImage, setCurrentImage] = useState(0);
   const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
   const navigate = useNavigate();
 
   const quantityRef = React.useRef(null);
+
+  // Get stock directly from product - no intermediate state needed
+  const stockLeft = product?.stock ?? product?.quantity ?? 0;
+
+  // Debug logging
+  React.useEffect(() => {
+    console.log('ProductDetail - product object:', product);
+    console.log('ProductDetail - stock value:', product?.stock);
+    console.log('ProductDetail - quantity value:', product?.quantity);
+    console.log('ProductDetail - stockLeft (computed):', stockLeft);
+  }, [product, stockLeft]);
 
 
 
@@ -19,7 +33,6 @@ const ProductDetail = ({ product }) => {
 
   const {
     name,
-    stock,
     price,
     images = [],
   } = product;
@@ -28,7 +41,7 @@ const ProductDetail = ({ product }) => {
     setQuantity((prev) => {
       const newQty = prev + delta;
       if (newQty < 1) return 1;
-      if (stock && newQty > stock) return stock;
+      if (stockLeft && newQty > stockLeft) return stockLeft;
       return newQty;
     });
   };
@@ -41,9 +54,78 @@ const ProductDetail = ({ product }) => {
   };
 
   const handleAddToCart = () => {
-    if (stock >= 1) {
-      navigate('/cart');
+    // Get fresh stock value from product
+    const currentStock = product?.stock ?? product?.quantity ?? 0;
+    console.log('handleAddToCart called');
+    console.log('product:', product);
+    console.log('currentStock (fresh from product):', currentStock);
+    console.log('quantity:', quantity);
+    console.log('Check: quantity > currentStock =', quantity > currentStock);
+    console.log('Check: currentStock <= 0 =', currentStock <= 0);
+    
+    // Simple check: can we add this quantity?
+    if (currentStock <= 0) {
+      console.log('Product out of stock');
+      setToastMessage("This product is out of stock!");
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 2000);
+      return;
     }
+    
+    if (quantity > currentStock) {
+      console.log('Quantity exceeds stock');
+      setToastMessage(`Only ${currentStock} available, but you're trying to add ${quantity}`);
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 2000);
+      return;
+    }
+
+    const stored = localStorage.getItem("cart");
+    const cartItems = stored ? JSON.parse(stored) : [];
+
+    const existingIdx = cartItems.findIndex((item) => item.name === product.name);
+    const numericPrice = typeof product.price === "string" ? parseFloat(product.price) : product.price;
+
+    const baseItem = {
+      name: product.name,
+      price: numericPrice,
+      images: product.images || [],
+      qty: quantity,
+      stock: currentStock,
+    };
+
+    let delta = quantity;
+
+    if (existingIdx !== -1) {
+      const existing = cartItems[existingIdx];
+      const existingQty = existing.qty || 0;
+      const desired = existingQty + quantity;
+      const allowed = Math.min(desired, currentStock);
+      delta = allowed - existingQty;
+      if (delta <= 0) {
+        setToastMessage("Not enough stock for this product!");
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 2000);
+        return;
+      }
+      cartItems[existingIdx] = { ...existing, qty: allowed };
+    } else {
+      delta = Math.min(quantity, currentStock);
+      if (delta <= 0) {
+        setToastMessage("Not enough stock for this product!");
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 2000);
+        return;
+      }
+      cartItems.push({ ...product, ...baseItem, qty: delta });
+    }
+
+    // Keep localStorage in sync for persistence
+    localStorage.setItem("cart", JSON.stringify(cartItems));
+
+    // Note: Stock is NOT reduced here. It will be reduced when order is actually placed via backend API
+    console.log('Product added to cart, navigating to cart page');
+    navigate('/cart');
   };
 
 
@@ -66,7 +148,7 @@ const ProductDetail = ({ product }) => {
           zIndex: 9999,
           textAlign: 'center',
         }}>
-          Not enough stock for this Product!
+          {toastMessage || 'Not enough stock for this Product!'}
         </div>
       )}
       {/* Left: Product Images */}
@@ -104,7 +186,7 @@ const ProductDetail = ({ product }) => {
       <div style={{ flex: 1, minWidth: 320, marginLeft: 32, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
         <h2 style={{ fontSize: 32, fontWeight: 700, marginTop: 0, marginBottom: 8 }}>{name || 'Product Name'}</h2>
         <div style={{ fontSize: 20, fontWeight: 600, margin: '0 0 8px 0' }}>
-          Stock Count: <span style={{ color: stock > 0 ? 'green' : 'red', fontWeight: 700 }}>{typeof stock === 'number' ? stock : 0}</span>
+          Stock Count: <span style={{ color: stockLeft > 0 ? 'green' : 'red', fontWeight: 700 }}>{typeof stockLeft === 'number' ? stockLeft : 0}</span>
         </div>
         <hr style={{ margin: '8px 0 16px 0' }} />
         <div style={{ fontSize: 24, fontWeight: 600, marginBottom: 8 }}>
@@ -112,11 +194,24 @@ const ProductDetail = ({ product }) => {
         </div>
         <div style={{ fontSize: 14, marginBottom: 8 }} ref={quantityRef}>Quantity</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-          <input type="text" value={quantity} readOnly style={{ width: 40, textAlign: 'center', fontSize: 16 }} />
+          <input 
+            type="text" 
+            value={quantity} 
+            readOnly 
+            style={{ 
+              width: 40, 
+              textAlign: 'center', 
+              fontSize: 16, 
+              background: isDarkMode ? '#1f2937' : '#fff', 
+              color: isDarkMode ? '#f3f4f6' : '#222', 
+              border: isDarkMode ? '1px solid #4b5563' : '1px solid #ccc',
+              borderRadius: 6
+            }} 
+          />
           <button 
             onClick={() => handleQuantityChange(1)} 
-            style={{ padding: '2px 8px', fontSize: 16, cursor: stock < 1 ? 'not-allowed' : 'pointer', opacity: stock < 1 ? 0.5 : 1 }}
-            disabled={stock < 1}
+            style={{ padding: '2px 8px', fontSize: 16, cursor: stockLeft < 1 ? 'not-allowed' : 'pointer', opacity: stockLeft < 1 ? 0.5 : 1 }}
+            disabled={stockLeft < 1}
           >+
           </button>
           <button onClick={() => handleQuantityChange(-1)} style={{ padding: '2px 8px', fontSize: 16 }}>-</button>
@@ -129,15 +224,15 @@ const ProductDetail = ({ product }) => {
               border: '2px solid #a855f7',
               color: '#a855f7',
               background: '#fff',
-              cursor: stock >= 1 ? 'pointer' : 'not-allowed',
+              cursor: stockLeft >= 1 ? 'pointer' : 'not-allowed',
               display: 'flex',
               alignItems: 'center',
               gap: 4,
               fontWeight: 600,
-              opacity: stock >= 1 ? 1 : 0.5
+              opacity: stockLeft >= 1 ? 1 : 0.5
             }}
             onClick={handleAddToCart}
-            disabled={stock < 1}
+            disabled={stockLeft < 1}
           >
             Add To Cart <span role="img" aria-label="cart">🛒</span>
           </button>
@@ -148,13 +243,13 @@ const ProductDetail = ({ product }) => {
               border: 'none',
               background: '#22c55e',
               color: '#fff',
-              cursor: stock >= 1 ? 'pointer' : 'not-allowed',
+              cursor: stockLeft >= 1 ? 'pointer' : 'not-allowed',
               fontWeight: 600,
-              opacity: stock >= 1 ? 1 : 0.5
+              opacity: stockLeft >= 1 ? 1 : 0.5
             }}
-            disabled={stock < 1}
+            disabled={stockLeft < 1}
             onClick={() => {
-              if (stock >= quantity) {
+              if (stockLeft >= quantity) {
                 navigate('/checkout', {
                   state: {
                     product: {
@@ -164,6 +259,7 @@ const ProductDetail = ({ product }) => {
                   }
                 });
               } else {
+                setToastMessage('Not enough stock for this product!');
                 setShowToast(true);
                 setTimeout(() => setShowToast(false), 2000);
               }

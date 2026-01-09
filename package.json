@@ -7,12 +7,15 @@
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:backend": "cd activity9-ecommerce-backend && npm run start:dev",
     "dev:frontend": "cd activity9-ecommerce-frontend && npm start",
+    "start:all": "concurrently \"cd activity9-ecommerce-backend && npm run start:dev\" \"cd activity9-ecommerce-frontend && set PORT=3001 && npm start\"",
     "install:all": "npm install && cd activity9-ecommerce-backend && npm install && cd ../activity9-ecommerce-frontend && npm install"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
   },
   "dependencies": {
+    "@nestjs/axios": "^4.0.1",
+    "bcrypt": "^6.0.0",
     "react-router-dom": "^7.11.0"
   }
 }

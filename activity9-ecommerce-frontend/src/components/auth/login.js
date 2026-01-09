@@ -1,42 +1,86 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
-
+import { useAuth } from "../../context/AuthContext";
+import { useTheme } from "../../context/ThemeContext";
+import DarkModeToggle from "../common/DarkModeToggle";
 
 const Login = () => {
   const navigate = useNavigate();
+  const { login, token, user } = useAuth();
+  const { isDarkMode } = useTheme();
+  
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e) => {
+  // Redirect if already logged in
+  React.useEffect(() => {
+    if (token && user) {
+      if (user.role === "admin") {
+        navigate("/admin", { replace: true });
+      } else {
+        navigate("/home", { replace: true });
+      }
+    }
+  }, [token, user, navigate]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    //if admin@example.com, go to /admin, else /home
-    if (email === "admin@example.com") {
-      navigate("/admin");
-    } else {
-      navigate("/home");
+    setError("");
+    setIsLoading(true);
+
+    try {
+      const response = await login(email, password);
+      
+      // Redirect based on role (using replace to prevent back button)
+      if (response.role === "admin") {
+        navigate("/admin", { replace: true });
+      } else {
+        navigate("/home", { replace: true });
+      }
+    } catch (err) {
+      setError(err.message || "Login failed. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex flex-col gap-4 justify-center items-center h-screen bg-gradient-to-r from-indigo-100 via-white to-indigo-200">
-      <div className="w-96 bg-white/90 border border-[#D1D9E0] p-8 shadow-sm" style={{ borderTopLeftRadius: 0, borderTopRightRadius: 0, borderBottomLeftRadius: 0, borderBottomRightRadius: '1rem' }}>
+    <div className={`flex flex-col gap-4 justify-center items-center h-screen transition-all duration-300 ${
+      isDarkMode ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' : 'bg-gradient-to-r from-indigo-100 via-white to-indigo-200'
+    }`}>
+      <div className="absolute top-4 right-4">
+        <DarkModeToggle />
+      </div>
+      <div className={`w-96 border p-8 shadow-sm transition-all duration-300 ${
+        isDarkMode ? 'bg-gray-800/90 border-gray-700' : 'bg-white/90 border-[#D1D9E0]'
+      }`} style={{ borderTopLeftRadius: 0, borderTopRightRadius: 0, borderBottomLeftRadius: 0, borderBottomRightRadius: '1rem' }}>
         <img
           src="/logo.png"
           alt="Logo"
-          className="mx-auto mb-4 w-20 h-20 border rounded-full border-[#D1D9E0] bg-white"
+          className={`mx-auto mb-4 w-20 h-20 border rounded-full ${
+            isDarkMode ? 'border-gray-600 bg-gray-700' : 'border-[#D1D9E0] bg-white'
+          }`}
         />
-        <h2 className="text-base font-semibold mb-6 text-center">
+        <h2 className={`text-base font-semibold mb-6 text-center ${
+          isDarkMode ? 'text-indigo-400' : 'text-gray-900'
+        }`}>
           Sign in to Access Chat Room
         </h2>
-        <hr className=" bg-[#D1D9E0] mb-6" />
+        <hr className={`mb-6 ${
+          isDarkMode ? 'bg-gray-700 border-gray-700' : 'bg-[#D1D9E0]'
+        }`} />
 
         <form className="text-left" onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block text-sm font-medium mb-2">Email</label>
+            <label className={`block text-sm font-medium mb-2 ${
+              isDarkMode ? 'text-gray-300' : 'text-gray-900'
+            }`}>Email</label>
             <input
-              className="w-full px-3 py-2 border border-[#D1D9E0] rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
+              style={{ borderColor: isDarkMode ? '#4B5563' : '#D1D9E0' }}
               type="email"
               id="email"
               placeholder="Enter your email"
@@ -46,10 +90,13 @@ const Login = () => {
             />
           </div>
           <div className="mb-4">
-            <label className="block text-sm font-medium mb-2">Password</label>
+            <label className={`block text-sm font-medium mb-2 ${
+              isDarkMode ? 'text-gray-300' : 'text-gray-900'
+            }`}>Password</label>
             <div className="relative">
               <input
-                className="w-full px-3 py-2 border border-[#D1D9E0] rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10 bg-white text-gray-900"
+                style={{ borderColor: isDarkMode ? '#4B5563' : '#D1D9E0' }}
                 type={showPassword ? "text" : "password"}
                 id="password"
                 placeholder="Enter your password"
@@ -77,38 +124,49 @@ const Login = () => {
             </div>
           </div>
 
-          {/* For input validation remove or add hidden in className */}
-          <div
-            className="flex justify-center bg-red-100 border border-red-400 text-red-600 p-1 rounded-md mb-2 hidden"
-            id="error-message"
-          >
-            error message
-          </div>
+          {/* Error Message */}
+          {error && (
+            <div className="flex justify-center bg-red-100 border border-red-400 text-red-600 p-3 rounded-md mb-4 text-sm">
+              {error}
+            </div>
+          )}
+
           <div className="flex items-center justify-between mb-6">
             <div>
               <input type="checkbox" id="remember" className="mr-2" />
-              <label className="text-sm">Remember me</label>
+              <label className={`text-sm ${
+                isDarkMode ? 'text-gray-300' : 'text-gray-900'
+              }`}>Remember me</label>
             </div>
             <Link
               to="/forgot-password"
-              className="text-blue-500 hover:underline"
+              className={isDarkMode ? 'text-indigo-400 hover:underline' : 'text-blue-500 hover:underline'}
             >
               Forgot password?
             </Link>
           </div>
           <button
-            className="w-full bg-green-700 text-white py-2 rounded-md hover:bg-green-800 transition duration-200"
+            className={`w-full py-2 rounded-md transition duration-200 font-medium ${
+              email && password && !isLoading
+                ? "bg-green-700 text-white hover:bg-green-800 cursor-pointer"
+                : "bg-gray-400 text-gray-600 cursor-not-allowed"
+            }`}
             type="submit"
+            disabled={!email || !password || isLoading}
           >
-            Login
+            {isLoading ? "Logging in..." : "Login"}
           </button>
         </form>
       </div>
 
-      <div className="w-96 bg-white/90 border border-[#D1D9E0] p-4 shadow-sm flex flex-col gap-2 items-center" style={{ borderTopLeftRadius: 0, borderTopRightRadius: 0, borderBottomLeftRadius: 0, borderBottomRightRadius: '1rem' }}>
-        <p className="text-center text-sm">
+      <div className={`w-96 border p-4 shadow-sm flex flex-col gap-2 items-center transition-all duration-300 ${
+        isDarkMode ? 'bg-gray-800/90 border-gray-700' : 'bg-white/90 border-[#D1D9E0]'
+      }`} style={{ borderTopLeftRadius: 0, borderTopRightRadius: 0, borderBottomLeftRadius: 0, borderBottomRightRadius: '1rem' }}>
+        <p className={`text-center text-sm ${
+          isDarkMode ? 'text-gray-300' : 'text-gray-900'
+        }`}>
           Don't have an account?{" "}
-          <Link to="/signup" className="text-blue-500 hover:underline">
+          <Link to="/signup" className={isDarkMode ? 'text-indigo-400 hover:underline' : 'text-blue-500 hover:underline'}>
             Create an Account.
           </Link>
         </p>

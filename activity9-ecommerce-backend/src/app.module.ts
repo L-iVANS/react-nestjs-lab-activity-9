@@ -1,9 +1,37 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { ProductsModule } from './products/products.module';
+import { User } from './users/user.entity';
+import { Order } from './orders/order.entity';
+import { AuthModule } from './auth/auth.module';
+import { PaymentsModule } from './payments/payments.module';
+import { OrdersModule } from './orders/orders.module';
 
 @Module({
-  imports: [],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
+    TypeOrmModule.forRoot({
+      type: 'mysql',
+      host: process.env.DB_HOST || 'localhost',
+      port: parseInt(process.env.DB_PORT || '3306', 10),
+      username: process.env.DB_USER || 'root',
+      password: process.env.DB_PASSWORD || '',
+      database: process.env.DB_NAME || 'lab_activity_db',
+      entities: [User, Order],
+      autoLoadEntities: true,
+      synchronize: process.env.DB_SYNC === 'true', 
+    }),
+    ProductsModule,
+    AuthModule,
+    PaymentsModule,
+    OrdersModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

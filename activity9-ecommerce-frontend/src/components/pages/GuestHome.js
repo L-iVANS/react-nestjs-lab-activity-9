@@ -8,19 +8,46 @@ import ProductGrid from "../product/ProductGrid";
 import Pagination from "../layout/Pagination";
 import filterByPrice from "../../utils/filterByPrice";
 import ArrowDown from "../../assets/icons/arrowDown.png";
+import { useAuth } from "../../context/AuthContext";
+import { useTheme } from "../../context/ThemeContext";
 
 const GuestHome = () => {
   const navigate = useNavigate();
+  const { token } = useAuth();
+  const { isDarkMode } = useTheme();
+
+  // Redirect if already logged in
+  React.useEffect(() => {
+    if (token) {
+      navigate("/home", { replace: true });
+    }
+  }, [token, navigate]);
+
   const [isPriceAsc, setIsPriceAsc] = React.useState(true);
   const [selectedCategory, setSelectedCategory] = React.useState("");
   const [selectedProduct, setSelectedProduct] = React.useState("");
   const [currentPage, setCurrentPage] = React.useState(1);
   const productsPerPage = 8;
-  // Load products from localStorage
-  const [products, setProducts] = React.useState(() => {
-    const stored = localStorage.getItem('products');
-    return stored ? JSON.parse(stored) : [];
-  });
+  // Fetch products from API
+  const [products, setProducts] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch('http://localhost:3000/products');
+        if (!response.ok) throw new Error('Failed to fetch products');
+        const data = await response.json();
+        setProducts(data);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
+
   const totalProducts = products.length;
   const totalPages = Math.ceil(totalProducts / productsPerPage);
   // Filter and sort products by price
@@ -51,13 +78,17 @@ const GuestHome = () => {
 
   // Handler for product click
   const handleProductClick = (product) => {
-    navigate('/product-detail', { state: { product, isAdmin: false, isGuest: true } });
+    navigate('/login');
   };
 
   return (
     <>
       <Header isGuest={true} onHome={handleHome} />
-      <div className="flex bg-gradient-to-br from-indigo-100 via-white to-indigo-200 min-h-screen rounded-3xl shadow-2xl p-4 md:p-8 transition-all duration-300">
+      <div className={`flex min-h-screen rounded-3xl shadow-2xl p-4 md:p-8 transition-all duration-300 ${
+        isDarkMode 
+          ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' 
+          : 'bg-gradient-to-br from-indigo-100 via-white to-indigo-200'
+      }`}>
         <SideNav
           selectedCategory={selectedCategory}
           setSelectedCategory={setSelectedCategory}
@@ -65,7 +96,9 @@ const GuestHome = () => {
           setSelectedProduct={setSelectedProduct}
           isAdmin={false}
         />
-        <div className="flex-1 min-h-0 flex flex-col bg-white/80 rounded-3xl shadow-xl mx-2 md:mx-6 p-4 md:p-8 transition-all duration-300">
+        <div className={`flex-1 min-h-0 flex flex-col rounded-3xl shadow-xl mx-2 md:mx-6 p-4 md:p-8 transition-all duration-300 ${
+          isDarkMode ? 'bg-gray-800/90' : 'bg-white/80'
+        }`}>
           <div className="m-6 text-lg font-bold flex items-center gap-2 select-none cursor-pointer w-fit" onClick={handleToggle}>
             Filter by Price
             <img
@@ -76,10 +109,12 @@ const GuestHome = () => {
           </div>
           <div className="flex-1 px-2 md:px-8 pb-6 flex flex-col items-center justify-center">
             <div className="w-full max-w-7xl h-full flex items-center justify-center">
-              {selectedCategory && !selectedProduct ? (
+              {loading ? (
+                <div className="text-gray-400 text-lg font-semibold">Loading products...</div>
+              ) : selectedCategory && !selectedProduct ? (
                 <div className="text-gray-400 text-lg font-semibold w-full h-full flex items-center justify-center">Select a product to view items.</div>
               ) : (
-                <ProductGrid products={paginatedProducts} isGuest={true} />
+                <ProductGrid products={paginatedProducts} isGuest={true} onProductClick={handleProductClick} />
               )}
             </div>
           </div>
