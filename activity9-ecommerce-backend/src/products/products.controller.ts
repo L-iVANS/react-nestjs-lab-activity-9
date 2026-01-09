@@ -16,9 +16,8 @@ export class ProductsController {
     return this.productsService.findAll();
   }
 
-  // GET product by ID - Authenticated users (clients, admins)
+  // GET product by ID - Public (no auth required)
   @Get(':id')
-  @UseGuards(JwtGuard)
   async findOne(@Param('id') id: number): Promise<Product> {
     return this.productsService.findOne(id);
   }

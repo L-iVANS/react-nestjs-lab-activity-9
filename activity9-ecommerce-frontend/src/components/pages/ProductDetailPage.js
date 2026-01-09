@@ -19,7 +19,7 @@ const ProductDetailPage = () => {
   // Fetch fresh product data from backend to get current stock
   useEffect(() => {
     const fetchFreshProduct = async () => {
-      if (!initialProduct?.id || !token) {
+      if (!initialProduct?.id) {
         setLoading(false);
         return;
       }

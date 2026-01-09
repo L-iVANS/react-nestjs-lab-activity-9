@@ -1,12 +1,14 @@
 import React from "react";
 import ProductCard from "./ProductCard";
+import { useTheme } from "../../context/ThemeContext";
 
 const ProductGrid = ({ products, isAdmin, isGuest, onAddToCart, onRemove, onRemoveProduct, onProductClick, onUpdate }) => {
+  const { isDarkMode } = useTheme();
   const handleRemove = onRemove || onRemoveProduct;
   
   if (!products || products.length === 0) {
     return (
-      <div className="col-span-4 row-span-2 flex items-center justify-center text-gray-400 text-lg font-semibold opacity-70 w-full h-full">
+      <div className={`col-span-4 row-span-2 flex items-center justify-center text-lg font-semibold opacity-70 w-full h-full ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
         No products available.
       </div>
     );

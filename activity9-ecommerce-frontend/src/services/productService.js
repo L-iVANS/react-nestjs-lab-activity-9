@@ -17,12 +17,18 @@ export const getAllProducts = async (token) => {
 };
 
 export const getProductById = async (id, token) => {
+  const headers = {
+    'Content-Type': 'application/json',
+  };
+  
+  // Add token only if it exists
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  
   const response = await fetch(`${API_URL}/products/${id}`, {
     method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
+    headers: headers,
   });
 
   if (!response.ok) {

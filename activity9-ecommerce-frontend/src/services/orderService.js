@@ -22,12 +22,21 @@ export const validateOrder = async (items) => {
 // Create order
 export const createOrder = async (token, items, shippingInfo, total, paymentMethod) => {
   try {
+    console.log("createOrder called with token:", token ? token.substring(0, 20) + "..." : "null");
+    
+    const headers = {
+      "Content-Type": "application/json",
+    };
+    
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    } else {
+      console.warn("No token provided to createOrder");
+    }
+    
     const response = await fetch(`${API_BASE_URL}/orders`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
+      headers: headers,
       body: JSON.stringify({
         items,
         shippingInfo,
@@ -38,6 +47,7 @@ export const createOrder = async (token, items, shippingInfo, total, paymentMeth
 
     if (!response.ok) {
       const error = await response.json();
+      console.error("Order creation response error:", error);
       throw new Error(error.message || "Order creation failed");
     }
 

@@ -2,8 +2,10 @@ import React from "react";
 import Toast from "../common/Toast";
 import AddToCartModal from "../modals/AddToCartModal";
 import addToCartIcon from "../../assets/icons/qlementine-icons_add-to-cart-16.png";
+import { useTheme } from "../../context/ThemeContext";
 
 const ProductCard = ({ productId, productName, productPrice, quantity, images, isAdmin, isGuest, onRemove, onAddToCart, onUpdate }) => {
+    const { isDarkMode } = useTheme();
     const [toast, setToast] = React.useState(null);
   const [showAddModal, setShowAddModal] = React.useState(false);
   const [currentImg, setCurrentImg] = React.useState(0);
@@ -68,25 +70,29 @@ const ProductCard = ({ productId, productName, productPrice, quantity, images, i
         <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
       )}
       <div
-      className="rounded-xl flex flex-col items-center justify-between w-full h-full min-h-0 relative transition-transform duration-200 group"
+      className={`rounded-xl flex flex-col items-center justify-between w-full h-full min-h-0 relative transition-transform duration-200 group ${isDarkMode ? 'bg-gradient-to-br from-gray-700 via-gray-800 to-gray-900 border-gray-600' : 'bg-gradient-to-br from-indigo-50 via-white to-indigo-100 border-indigo-200'}`}
       style={{
         width: '260px',
-        background: 'linear-gradient(135deg, #f8fafc 60%, #e0e7ff 100%)',
-        boxShadow: '0 4px 24px 0 rgba(99,102,241,0.10)',
-        border: '1.5px solid #e0e7ff',
+        background: isDarkMode 
+          ? 'linear-gradient(135deg, #374151 60%, #1f2937 100%)' 
+          : 'linear-gradient(135deg, #f8fafc 60%, #e0e7ff 100%)',
+        boxShadow: isDarkMode 
+          ? '0 4px 24px 0 rgba(0,0,0,0.3)' 
+          : '0 4px 24px 0 rgba(99,102,241,0.10)',
+        border: isDarkMode ? '1.5px solid #374151' : '1.5px solid #e0e7ff',
         padding: '1.5rem 1.25rem 1.25rem 1.25rem',
         cursor: 'pointer',
         transition: 'box-shadow 0.2s, transform 0.2s',
       }}
-      onMouseEnter={e => e.currentTarget.style.boxShadow = '0 8px 32px 0 rgba(99,102,241,0.18)'}
-      onMouseLeave={e => e.currentTarget.style.boxShadow = '0 4px 24px 0 rgba(99,102,241,0.10)'}
+      onMouseEnter={e => e.currentTarget.style.boxShadow = isDarkMode ? '0 8px 32px 0 rgba(0,0,0,0.5)' : '0 8px 32px 0 rgba(99,102,241,0.18)'}
+      onMouseLeave={e => e.currentTarget.style.boxShadow = isDarkMode ? '0 4px 24px 0 rgba(0,0,0,0.3)' : '0 4px 24px 0 rgba(99,102,241,0.10)'}
     >
       {/* Product Images */}
       {validImages && validImages.length > 0 && (
-        <div className="flex items-center justify-center mb-3 mt-1 gap-2 bg-white rounded-2xl shadow-lg border-2 border-indigo-100 group-hover:border-indigo-300 transition-all duration-200" style={{ width: '180px', height: '180px', margin: '0 auto', position: 'relative', overflow: 'hidden' }}>
+        <div className={`flex items-center justify-center mb-3 mt-1 gap-2 rounded-2xl shadow-lg transition-all duration-200 ${isDarkMode ? 'bg-gray-800 border-2 border-gray-600' : 'bg-white border-2 border-indigo-100'}`} style={{ width: '180px', height: '180px', margin: '0 auto', position: 'relative', overflow: 'hidden' }}>
           {validImages.length > 1 && (
             <button
-              className="px-2 py-1 text-2xl font-bold text-gray-600 hover:text-gray-900 z-10 flex-shrink-0"
+              className={`px-2 py-1 text-2xl font-bold z-10 flex-shrink-0 ${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
               style={{ height: '220px', display: 'flex', alignItems: 'center', background: 'none', borderRadius: 0, boxShadow: 'none', position: 'absolute', left: 0, top: 0, bottom: 0 }}
               onClick={e => { e.stopPropagation(); setCurrentImg((prev) => (prev - 1 + validImages.length) % validImages.length); }}
               aria-label="Previous image"
@@ -98,11 +104,11 @@ const ProductCard = ({ productId, productName, productPrice, quantity, images, i
           <img
             src={validImages[currentImg]}
             alt={`Product ${productName} image ${currentImg + 1}`}
-            style={{ width: '160px', height: '160px', objectFit: 'contain', borderRadius: '8px', background: 'white', display: 'block', margin: '0 auto', transition: 'transform 0.2s', boxShadow: '0 1px 6px 0 rgba(99,102,241,0.06)' }}
+            style={{ width: '160px', height: '160px', objectFit: 'contain', borderRadius: '8px', background: isDarkMode ? '#1f2937' : 'white', display: 'block', margin: '0 auto', transition: 'transform 0.2s', boxShadow: isDarkMode ? '0 1px 6px 0 rgba(0,0,0,0.3)' : '0 1px 6px 0 rgba(99,102,241,0.06)' }}
           />
           {validImages.length > 1 && (
             <button
-              className="px-2 py-1 text-2xl font-bold text-gray-600 hover:text-gray-900 z-10 flex-shrink-0"
+              className={`px-2 py-1 text-2xl font-bold z-10 flex-shrink-0 ${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
               style={{ height: '220px', display: 'flex', alignItems: 'center', background: 'none', borderRadius: 0, boxShadow: 'none', position: 'absolute', right: 0, top: 0, bottom: 0 }}
               onClick={e => { e.stopPropagation(); setCurrentImg((prev) => (prev + 1) % validImages.length); }}
               aria-label="Next image"
@@ -130,7 +136,7 @@ const ProductCard = ({ productId, productName, productPrice, quantity, images, i
       <div className="mb-2"></div>
       {/* Not Available badge */}
       {quantity === 0 && (
-        <div className="mb-2 text-red-600 font-semibold text-center w-full text-sm">Not Available</div>
+        <div className={`mb-2 font-semibold text-center w-full text-sm ${isDarkMode ? 'text-red-400' : 'text-red-600'}`}>Not Available</div>
       )}
       {/* Editable fields for admin */}
       {isAdmin && editing ? (
@@ -139,21 +145,21 @@ const ProductCard = ({ productId, productName, productPrice, quantity, images, i
             type="text"
             value={tempName}
             onChange={e => setTempName(e.target.value)}
-            className="mb-2 text-base font-semibold border rounded-full px-3 py-1 w-full shadow-sm"
+            className={`mb-2 text-base font-semibold border rounded-full px-3 py-1 w-full shadow-sm ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
           />
           <input
             type="text"
             value={tempPrice}
             onChange={e => setTempPrice(e.target.value)}
-            className="mb-2 text-sm border rounded-full px-3 py-1 w-full shadow-sm"
+            className={`mb-2 text-sm border rounded-full px-3 py-1 w-full shadow-sm ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
           />
         </>
       ) : (
         <>
-          <div className="mb-1 text-lg font-bold text-center w-full text-gray-800 truncate rounded-full bg-indigo-50/60 px-3 py-1 shadow-inner" title={productName}>{productName}</div>
+          <div className={`mb-1 text-lg font-bold text-center w-full truncate rounded-full px-3 py-1 shadow-inner ${isDarkMode ? 'bg-gray-700 text-gray-100' : 'text-gray-800 bg-indigo-50/60'}`} title={productName}>{productName}</div>
           {/* Show price for guests and users */}
           {!isAdmin && (
-            <div className="text-base font-semibold text-center w-full mb-2 text-indigo-600">₱{Number(productPrice).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</div>
+            <div className={`text-base font-semibold text-center w-full mb-2 ${isDarkMode ? 'text-indigo-400' : 'text-indigo-600'}`}>₱{Number(productPrice).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</div>
           )}
         </>
       )}
@@ -163,13 +169,13 @@ const ProductCard = ({ productId, productName, productPrice, quantity, images, i
             <div className="flex flex-col gap-2 max-w-full items-center w-full">
               <div className="flex flex-wrap items-center justify-center w-full">
                 <div className="flex items-center gap-2 justify-center">
-                  <label className="text-sm font-medium">Qty:</label>
+                  <label className={`text-sm font-medium ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>Qty:</label>
                   <input
                     type="number"
                     min="0"
                     value={editing ? tempQty : quantity}
                     onChange={editing ? handleQtyInput : undefined}
-                    className="w-16 px-2 py-1 border rounded"
+                    className={`w-16 px-2 py-1 border rounded ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
                     readOnly={!editing}
                     style={{ minWidth: 0 }}
                   />
@@ -190,7 +196,7 @@ const ProductCard = ({ productId, productName, productPrice, quantity, images, i
                     </>
                   )}
                 </div>
-                <div className="text-sm font-semibold ml-2">₱{Number(productPrice).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</div>
+                <div className={`text-sm font-semibold ml-2 ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>₱{Number(productPrice).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</div>
               </div>
               {/* Edit button directly under Qty for admin */}
               {!editing && (

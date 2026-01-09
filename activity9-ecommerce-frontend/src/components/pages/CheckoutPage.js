@@ -188,9 +188,11 @@ const CheckoutPage = () => {
 
     if (!user || !token) {
       setToast({ message: "Please login to place an order", type: "error" });
+      console.error("Missing user or token:", { user: !!user, token: !!token });
       return;
     }
 
+    console.log("Token being sent:", token ? token.substring(0, 20) + "..." : "null");
     setIsProcessing(true);
 
     try {
