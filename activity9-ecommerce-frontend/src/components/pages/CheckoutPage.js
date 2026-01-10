@@ -461,7 +461,7 @@ const CheckoutPage = () => {
               <div className={`rounded-lg shadow-sm p-6 sticky top-8 ${isDarkMode ? 'bg-gray-900' : 'bg-white'}`}>
                 <h2 className={`text-xl font-bold mb-6 ${isDarkMode ? 'text-gray-100' : 'text-gray-800'}`}>Order Summary</h2>
                 {/* Cart Items */}
-                <div className="mb-6 pb-6 border-b max-h-64 overflow-y-auto">
+                <div className="mb-6 pb-6 border-b max-h-64 overflow-y-auto scrollbar-hide">
                   {cart.map((item, idx) => (
                     <div key={idx} className={`flex justify-between items-start mb-4 pb-4 border-b last:border-b-0 last:pb-0 last:mb-0 ${isDarkMode ? 'border-gray-700' : ''}`}>
                       <div>

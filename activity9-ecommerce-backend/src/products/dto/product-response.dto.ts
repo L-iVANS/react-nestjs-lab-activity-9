@@ -1,37 +1,36 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNumber, IsArray, IsNotEmpty } from 'class-validator';
 
-export class CreateProductDto {
+export class ProductResponseDto {
+  @ApiProperty({ example: 1 })
+  id: number;
+
   @ApiProperty({ example: 'Sample Product' })
-  @IsString()
-  @IsNotEmpty()
   name: string;
 
   @ApiProperty({ example: 'A great product.' })
-  @IsString()
   description: string;
 
   @ApiProperty({ example: 999.99 })
-  @IsNumber()
-  @IsNotEmpty()
   price: number;
 
   @ApiProperty({ example: 10 })
-  @IsNumber()
-  @IsNotEmpty()
   stock: number;
 
   @ApiProperty({ example: ['https://example.com/image1.jpg'] })
-  @IsArray()
   images: string[];
 
   @ApiProperty({ example: 'Electronics' })
-  @IsString()
-  @IsNotEmpty()
   category: string;
 
   @ApiProperty({ example: 'Graphics Card' })
-  @IsString()
-  @IsNotEmpty()
   productType: string;
+
+  @ApiProperty({ example: false })
+  isArchived: boolean;
+
+  @ApiProperty({ example: '2026-01-11T00:00:00.000Z' })
+  createdAt: Date;
+
+  @ApiProperty({ example: '2026-01-11T00:00:00.000Z' })
+  updatedAt: Date;
 }

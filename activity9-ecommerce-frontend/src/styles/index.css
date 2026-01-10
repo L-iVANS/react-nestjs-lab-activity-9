@@ -49,3 +49,43 @@ body {
 .text-muted {
   color: var(--text-muted);
 }
+
+/* Canva-style modern scrollbars */
+.scrollbar-hide {
+  /* Firefox */
+  scrollbar-width: thin !important;
+  scrollbar-color: #d1d5db transparent !important;
+}
+
+/* Chrome, Safari, Edge */
+.scrollbar-hide::-webkit-scrollbar {
+  width: 6px !important;
+  height: 6px !important;
+}
+
+.scrollbar-hide::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.scrollbar-hide::-webkit-scrollbar-thumb {
+  background: #d1d5db !important;
+  border-radius: 10px !important;
+  transition: all 0.2s ease !important;
+}
+
+.scrollbar-hide::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af !important;
+}
+
+/* Dark mode scrollbars - target parent with bg-gray classes */
+.bg-gray-800 .scrollbar-hide::-webkit-scrollbar-thumb,
+.bg-gray-900 .scrollbar-hide::-webkit-scrollbar-thumb,
+.from-gray-900 .scrollbar-hide::-webkit-scrollbar-thumb {
+  background: #4b5563 !important;
+}
+
+.bg-gray-800 .scrollbar-hide::-webkit-scrollbar-thumb:hover,
+.bg-gray-900 .scrollbar-hide::-webkit-scrollbar-thumb:hover,
+.from-gray-900 .scrollbar-hide::-webkit-scrollbar-thumb:hover {
+  background: #6b7280 !important;
+}

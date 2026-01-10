@@ -98,7 +98,7 @@ const GuestHome = () => {
         />
         <div className={`flex-1 min-h-0 flex flex-col rounded-3xl shadow-xl mx-2 md:mx-6 p-4 md:p-8 transition-all duration-300 ${
           isDarkMode ? 'bg-gray-800/90' : 'bg-white/80'
-        }`}>
+        } overflow-y-auto scrollbar-hide`}>
           <div className="flex items-center justify-between m-6">
             {/* Filter by Price - left (copied from Home/AdminHome) */}
             <div

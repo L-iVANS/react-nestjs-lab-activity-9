@@ -8,6 +8,7 @@ import { UserRole } from '../utils/enums/user-role.enum';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { ProductResponseDto } from './dto/product-response.dto';
 
 @ApiTags('Products')
 @ApiBearerAuth()
@@ -18,17 +19,25 @@ export class ProductsController {
   // GET all products - Public (no auth required for guests)
   @Get()
   @ApiOperation({ summary: 'Get all products' })
-  @ApiResponse({ status: 200, description: 'List of products' })
-  async findAll(): Promise<Product[]> {
-    return this.productsService.findAll();
+  @ApiResponse({ status: 200, description: 'List of products', type: [ProductResponseDto] })
+  async findAll(): Promise<ProductResponseDto[]> {
+    const products = await this.productsService.findAll();
+    return products.map(p => ({
+      ...p,
+      images: Array.isArray(p.images) ? p.images : (typeof p.images === 'string' ? JSON.parse(p.images) : [])
+    }));
   }
 
   // GET product by ID - Public (no auth required)
   @Get(':id')
   @ApiOperation({ summary: 'Get product by ID' })
-  @ApiResponse({ status: 200, description: 'Product details' })
-  async findOne(@Param('id') id: number): Promise<Product> {
-    return this.productsService.findOne(id);
+  @ApiResponse({ status: 200, description: 'Product details', type: ProductResponseDto })
+  async findOne(@Param('id') id: number): Promise<ProductResponseDto> {
+    const product = await this.productsService.findOne(id);
+    return {
+      ...product,
+      images: Array.isArray(product.images) ? product.images : (typeof product.images === 'string' ? JSON.parse(product.images) : [])
+    };
   }
 
   // POST create new product - Admin only
@@ -36,14 +45,14 @@ export class ProductsController {
   @UseGuards(JwtGuard, RolesGuard)
   @Roles([UserRole.ADMIN])
   @ApiOperation({ summary: 'Create a new product' })
-  @ApiResponse({ status: 201, description: 'Product created successfully' })
-  async create(@Body() productData: CreateProductDto): Promise<Product> {
-    // Convert images array to JSON string for storage
-    const dataToSave = {
-      ...productData,
-      images: Array.isArray(productData.images) ? JSON.stringify(productData.images) : productData.images,
+  @ApiResponse({ status: 201, description: 'Product created successfully', type: ProductResponseDto })
+  async create(@Body() productData: CreateProductDto): Promise<ProductResponseDto> {
+    // Service handles stringification, pass data as-is
+    const product = await this.productsService.create(productData as any);
+    return {
+      ...product,
+      images: Array.isArray(product.images) ? product.images : (typeof product.images === 'string' ? JSON.parse(product.images) : [])
     };
-    return this.productsService.create(dataToSave as any);
   }
 
   // PUT update product - Admin only
