@@ -27,6 +27,7 @@ const GuestHome = () => {
   const [selectedCategory, setSelectedCategory] = React.useState("");
   const [selectedProduct, setSelectedProduct] = React.useState("");
   const [currentPage, setCurrentPage] = React.useState(1);
+  const [searchQuery, setSearchQuery] = React.useState("");
   const productsPerPage = 8;
   // Fetch products from API
   const [products, setProducts] = React.useState([]);
@@ -52,12 +53,22 @@ const GuestHome = () => {
   const totalPages = Math.ceil(totalProducts / productsPerPage);
   // Filter and sort products by price
   let filteredProducts = products;
+  
+  // Filter by search query first
+  if (searchQuery.trim()) {
+    filteredProducts = products.filter(p =>
+      p.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }
+  
   if (selectedCategory && selectedProduct) {
-    filteredProducts = products.filter(
-      p => p.category === selectedCategory && p.product === selectedProduct
+    filteredProducts = filteredProducts.filter(
+      p => p.category === selectedCategory && p.productType === selectedProduct
     );
   } else if (selectedCategory && !selectedProduct) {
-    filteredProducts = [];
+    filteredProducts = filteredProducts.filter(
+      p => p.category === selectedCategory
+    );
   }
   const sortedProducts = filterByPrice(filteredProducts, isPriceAsc);
   const paginatedProducts = sortedProducts.slice(
@@ -83,7 +94,7 @@ const GuestHome = () => {
 
   return (
     <>
-      <Header isGuest={true} onHome={handleHome} />
+      <Header isGuest={true} onHome={handleHome} onSearch={setSearchQuery} />
       <div className={`flex min-h-screen rounded-3xl shadow-2xl p-4 md:p-8 transition-all duration-300 ${
         isDarkMode 
           ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' 

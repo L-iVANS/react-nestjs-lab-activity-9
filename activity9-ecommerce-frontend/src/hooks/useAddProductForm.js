@@ -125,7 +125,8 @@ export default function useAddProductForm() {
     if (!newProduct.product) newErrors.product = 'Product is required.';
     if (!newProduct.quantity || Number(newProduct.quantity) < 1)
       newErrors.quantity = 'Quantity must be at least 1.';
-    if (newProduct.images.length === 0) newErrors.images = 'At least one image is required.';
+    // Check imagePreviews length instead of newProduct.images length
+    if (imagePreviews.length === 0) newErrors.images = 'At least one image is required.';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
