@@ -99,13 +99,25 @@ const GuestHome = () => {
         <div className={`flex-1 min-h-0 flex flex-col rounded-3xl shadow-xl mx-2 md:mx-6 p-4 md:p-8 transition-all duration-300 ${
           isDarkMode ? 'bg-gray-800/90' : 'bg-white/80'
         }`}>
-          <div className="m-6 text-lg font-bold flex items-center gap-2 select-none cursor-pointer w-fit" onClick={handleToggle}>
-            Filter by Price
-            <img
-              src={ArrowDown}
-              alt="Toggle Arrow"
-              className={`w-3 h-3 transition-transform duration-200 ${isPriceAsc ? '' : 'rotate-180'}`}
-            />
+          <div className="flex items-center justify-between m-6">
+            {/* Filter by Price - left (copied from Home/AdminHome) */}
+            <div
+              className={`text-lg font-bold flex items-center gap-2 select-none cursor-pointer w-fit px-4 py-2 rounded-xl shadow-sm transition ${
+                isDarkMode 
+                  ? 'bg-gray-700 border border-gray-600 text-indigo-400 hover:bg-gray-600' 
+                  : 'bg-indigo-50 border border-indigo-100 hover:bg-indigo-100'
+              }`}
+              onClick={handleToggle}
+              style={{ fontWeight: 600, color: isDarkMode ? '#a78bfa' : '#6366f1', letterSpacing: '0.01em' }}
+            >
+              Filter by Price
+              <img
+                src={ArrowDown}
+                alt="Toggle Arrow"
+                className={`w-3 h-3 transition-transform duration-200 ${isPriceAsc ? '' : 'rotate-180'}`}
+                style={{ filter: isDarkMode ? 'brightness(0) invert(1)' : 'none' }}
+              />
+            </div>
           </div>
           <div className="flex-1 px-2 md:px-8 pb-6 flex flex-col items-center justify-center">
             <div className="w-full max-w-7xl h-full flex items-center justify-center">

@@ -1,6 +1,19 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
+import {
+  getGradientBg,
+  getToastStyle,
+  getImageNavigationButtonStyle,
+  getImageContainerStyle,
+  getThumbnailStyle,
+  getProductInfoContainerStyle,
+  getQuantityInputStyle,
+  getQuantityButtonStyle,
+  getAddToCartButtonStyle,
+  getBuyNowButtonStyle,
+  getTextColor,
+} from '../../utils/themeStyles';
 
 
 const ProductDetail = ({ product }) => {
@@ -24,11 +37,8 @@ const ProductDetail = ({ product }) => {
     console.log('ProductDetail - stockLeft (computed):', stockLeft);
   }, [product, stockLeft]);
 
-
-
-
   if (!product) {
-    return <div>No product selected.</div>;
+    return <div style={getTextColor(isDarkMode)}>No product selected.</div>;
   }
 
   const {
@@ -48,32 +58,26 @@ const ProductDetail = ({ product }) => {
 
   const handleImageChange = (delta) => {
     setCurrentImage((prev) => {
-      const total = images.length;
-      return (prev + delta + total) % total;
+      let next = prev + delta;
+      if (next < 0) next = images.length - 1;
+      if (next >= images.length) next = 0;
+      return next;
     });
   };
 
   const handleAddToCart = () => {
-    // Get fresh stock value from product
-    const currentStock = product?.stock ?? product?.quantity ?? 0;
-    console.log('handleAddToCart called');
-    console.log('product:', product);
-    console.log('currentStock (fresh from product):', currentStock);
-    console.log('quantity:', quantity);
-    console.log('Check: quantity > currentStock =', quantity > currentStock);
-    console.log('Check: currentStock <= 0 =', currentStock <= 0);
+    const currentStock = stockLeft;
     
-    // Simple check: can we add this quantity?
-    if (currentStock <= 0) {
-      console.log('Product out of stock');
+    // Check if product is out of stock
+    if (currentStock === 0) {
       setToastMessage("This product is out of stock!");
       setShowToast(true);
       setTimeout(() => setShowToast(false), 2000);
       return;
     }
     
+    // Check if trying to add more than available stock
     if (quantity > currentStock) {
-      console.log('Quantity exceeds stock');
       setToastMessage(`Only ${currentStock} available, but you're trying to add ${quantity}`);
       setShowToast(true);
       setTimeout(() => setShowToast(false), 2000);
@@ -86,189 +90,146 @@ const ProductDetail = ({ product }) => {
     const existingIdx = cartItems.findIndex((item) => item.name === product.name);
     const numericPrice = typeof product.price === "string" ? parseFloat(product.price) : product.price;
 
-    const baseItem = {
-      name: product.name,
-      price: numericPrice,
-      images: product.images || [],
-      qty: quantity,
-      stock: currentStock,
-    };
-
-    let delta = quantity;
-
     if (existingIdx !== -1) {
+      // Product already in cart - check if we can add more
       const existing = cartItems[existingIdx];
       const existingQty = existing.qty || 0;
       const desired = existingQty + quantity;
-      const allowed = Math.min(desired, currentStock);
-      delta = allowed - existingQty;
-      if (delta <= 0) {
-        setToastMessage("Not enough stock for this product!");
+      
+      if (desired > currentStock) {
+        setToastMessage(`Only ${currentStock} total available. Already have ${existingQty} in cart.`);
         setShowToast(true);
         setTimeout(() => setShowToast(false), 2000);
         return;
       }
-      cartItems[existingIdx] = { ...existing, qty: allowed };
+      
+      cartItems[existingIdx] = { ...existing, qty: desired };
     } else {
-      delta = Math.min(quantity, currentStock);
-      if (delta <= 0) {
-        setToastMessage("Not enough stock for this product!");
-        setShowToast(true);
-        setTimeout(() => setShowToast(false), 2000);
-        return;
-      }
-      cartItems.push({ ...product, ...baseItem, qty: delta });
+      // New product to cart - just add it
+      cartItems.push({
+        ...product,
+        qty: quantity,
+        price: numericPrice,
+        images: product.images || [],
+        stock: currentStock,
+      });
     }
 
-    // Keep localStorage in sync for persistence
     localStorage.setItem("cart", JSON.stringify(cartItems));
-
-    // Note: Stock is NOT reduced here. It will be reduced when order is actually placed via backend API
     console.log('Product added to cart, navigating to cart page');
     navigate('/cart');
   };
 
-
-
   return (
-    <div style={{ display: 'flex', gap: '2rem', alignItems: 'flex-start', position: 'relative' }}>
-      {showToast && (
-        <div style={{
-          position: 'fixed',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          background: '#f87171',
-          color: '#fff',
-          padding: '18px 32px',
-          borderRadius: '12px',
-          fontSize: '1.25rem',
-          fontWeight: 700,
-          boxShadow: '0 2px 16px rgba(0,0,0,0.15)',
-          zIndex: 9999,
-          textAlign: 'center',
-        }}>
-          {toastMessage || 'Not enough stock for this Product!'}
-        </div>
-      )}
-      {/* Left: Product Images */}
-      <div style={{ flex: 1 }}>
-        <div style={{ position: 'relative', width: 350, height: 350, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, fontWeight: 600 }}>
-          {images.length > 1 && (
-            <button onClick={() => handleImageChange(-1)} style={{ position: 'absolute', left: 10, background: 'none', border: 'none', fontSize: 32, cursor: 'pointer', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4b5563' }}>
-              &#8592;
-            </button>
+    <div style={{
+      display: 'flex',
+      gap: '2rem',
+      alignItems: 'flex-start',
+      position: 'relative',
+      ...getGradientBg(isDarkMode),
+      borderRadius: 24,
+      boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+      padding: '24px',
+      ...getTextColor(isDarkMode),
+      transition: 'background 0.2s, color 0.2s',
+    }}>
+          {showToast && (
+            <div style={getToastStyle(isDarkMode)}>
+              {toastMessage || 'Not enough stock for this Product!'}
+            </div>
           )}
-          {images.length > 0 ? (
-            <img src={images[currentImage]} alt="Product" style={{ maxWidth: '90%', maxHeight: '90%' }} />
-          ) : (
-            <span>Product Photo</span>
-          )}
-          {images.length > 1 && (
-            <button onClick={() => handleImageChange(1)} style={{ position: 'absolute', right: 10, background: 'none', border: 'none', fontSize: 32, cursor: 'pointer', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4b5563' }}>
-              &#8594;
-            </button>
-          )}
-        </div>
-        <div style={{ display: 'flex', gap: 16, marginTop: 16 }}>
-          {images.map((img, idx) => (
-            <img
-              key={idx}
-              src={img}
-              alt={`Thumbnail ${idx + 1}`}
-              style={{ width: 80, height: 80, objectFit: 'cover', border: currentImage === idx ? '2px solid #333' : '2px solid #ccc', cursor: 'pointer' }}
-              onClick={() => setCurrentImage(idx)}
-            />
-          ))}
-        </div>
-      </div>
-      {/* Right: Product Info */}
-      <div style={{ flex: 1, minWidth: 320, marginLeft: 32, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
-        <h2 style={{ fontSize: 32, fontWeight: 700, marginTop: 0, marginBottom: 8 }}>{name || 'Product Name'}</h2>
-        <div style={{ fontSize: 20, fontWeight: 600, margin: '0 0 8px 0' }}>
-          Stock Count: <span style={{ color: stockLeft > 0 ? 'green' : 'red', fontWeight: 700 }}>{typeof stockLeft === 'number' ? stockLeft : 0}</span>
-        </div>
-        <hr style={{ margin: '8px 0 16px 0' }} />
-        <div style={{ fontSize: 24, fontWeight: 600, marginBottom: 8 }}>
-          {price ? `₱${Number(price).toLocaleString('en-PH', { minimumFractionDigits: 2 })}` : '₱0.00'}
-        </div>
-        <div style={{ fontSize: 14, marginBottom: 8 }} ref={quantityRef}>Quantity</div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-          <input 
-            type="text" 
-            value={quantity} 
-            readOnly 
-            style={{ 
-              width: 40, 
-              textAlign: 'center', 
-              fontSize: 16, 
-              background: isDarkMode ? '#1f2937' : '#fff', 
-              color: isDarkMode ? '#f3f4f6' : '#222', 
-              border: isDarkMode ? '1px solid #4b5563' : '1px solid #ccc',
-              borderRadius: 6
-            }} 
-          />
-          <button 
-            onClick={() => handleQuantityChange(1)} 
-            style={{ padding: '2px 8px', fontSize: 16, cursor: stockLeft < 1 ? 'not-allowed' : 'pointer', opacity: stockLeft < 1 ? 0.5 : 1 }}
-            disabled={stockLeft < 1}
-          >+
-          </button>
-          <button onClick={() => handleQuantityChange(-1)} style={{ padding: '2px 8px', fontSize: 16 }}>-</button>
-        </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button
-            style={{
-              padding: '8px 16px',
-              borderRadius: 8,
-              border: '2px solid #a855f7',
-              color: '#a855f7',
-              background: '#fff',
-              cursor: stockLeft >= 1 ? 'pointer' : 'not-allowed',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 4,
-              fontWeight: 600,
-              opacity: stockLeft >= 1 ? 1 : 0.5
-            }}
-            onClick={handleAddToCart}
-            disabled={stockLeft < 1}
-          >
-            Add To Cart <span role="img" aria-label="cart">🛒</span>
-          </button>
-          <button
-            style={{
-              padding: '8px 16px',
-              borderRadius: 8,
-              border: 'none',
-              background: '#22c55e',
-              color: '#fff',
-              cursor: stockLeft >= 1 ? 'pointer' : 'not-allowed',
-              fontWeight: 600,
-              opacity: stockLeft >= 1 ? 1 : 0.5
-            }}
-            disabled={stockLeft < 1}
-            onClick={() => {
-              if (stockLeft >= quantity) {
-                navigate('/checkout', {
-                  state: {
-                    product: {
-                      ...product,
-                      qty: quantity
+          {/* Product Detail Section */}
+          <div style={{ display: 'flex', gap: '2rem', alignItems: 'flex-start', position: 'relative', width: '100%' }}>
+            {/* Left: Product Images */}
+            <div style={{ flex: 1 }}>
+              <div style={getImageContainerStyle(isDarkMode)}>
+                {images.length > 1 && (
+                  <button onClick={() => handleImageChange(-1)} style={{ position: 'absolute', left: 10, ...getImageNavigationButtonStyle(isDarkMode) }}>
+                    &#8592;
+                  </button>
+                )}
+                {images.length > 0 ? (
+                  <img src={images[currentImage]} alt="Product" style={{ maxWidth: '90%', maxHeight: '90%' }} />
+                ) : (
+                  <span style={{ color: isDarkMode ? '#f3f4f6' : '#222' }}>Product Photo</span>
+                )}
+                {images.length > 1 && (
+                  <button onClick={() => handleImageChange(1)} style={{ position: 'absolute', right: 10, ...getImageNavigationButtonStyle(isDarkMode) }}>
+                    &#8594;
+                  </button>
+                )}
+              </div>
+              <div style={{ display: 'flex', gap: 16, marginTop: 16 }}>
+                {images.map((img, idx) => (
+                  <img
+                    key={idx}
+                    src={img}
+                    alt={`Thumbnail ${idx + 1}`}
+                    style={getThumbnailStyle(isDarkMode, currentImage === idx)}
+                    onClick={() => setCurrentImage(idx)}
+                  />
+                ))}
+              </div>
+            </div>
+            {/* Right: Product Info */}
+            <div style={getProductInfoContainerStyle(isDarkMode)}>
+              <h2 style={{ fontSize: 32, fontWeight: 700, marginTop: 0, marginBottom: 8, ...getTextColor(isDarkMode) }}>{name || 'Product Name'}</h2>
+              <div style={{ fontSize: 20, fontWeight: 600, margin: '0 0 8px 0', ...getTextColor(isDarkMode) }}>
+                Stock Count: <span style={{ color: stockLeft > 0 ? (isDarkMode ? '#10b981' : '#10b981') : (isDarkMode ? '#ef4444' : '#ef4444'), fontWeight: 700 }}>{typeof stockLeft === 'number' ? stockLeft : 0}</span>
+              </div>
+              <hr style={{ margin: '8px 0 16px 0', borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)' }} />
+              <div style={{ fontSize: 24, fontWeight: 600, marginBottom: 8, ...getTextColor(isDarkMode) }}>
+                {price ? `₱${Number(price).toLocaleString('en-PH', { minimumFractionDigits: 2 })}` : '₱0.00'}
+              </div>
+              <div style={{ fontSize: 14, marginBottom: 8, ...getTextColor(isDarkMode) }} ref={quantityRef}>Quantity</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+                <input 
+                  type="text" 
+                  value={quantity} 
+                  readOnly 
+                  style={getQuantityInputStyle(isDarkMode)} 
+                />
+                <button 
+                  onClick={() => handleQuantityChange(1)} 
+                  style={{ ...getQuantityButtonStyle(isDarkMode), cursor: stockLeft < 1 ? 'not-allowed' : 'pointer', opacity: stockLeft < 1 ? 0.5 : 1 }}
+                  disabled={stockLeft < 1}
+                >+
+                </button>
+                <button onClick={() => handleQuantityChange(-1)} style={getQuantityButtonStyle(isDarkMode)}>-</button>
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button
+                  style={getAddToCartButtonStyle(isDarkMode, stockLeft < 1)}
+                  onClick={handleAddToCart}
+                  disabled={stockLeft < 1}
+                >
+                  Add To Cart <span role="img" aria-label="cart">🛒</span>
+                </button>
+                <button
+                  style={getBuyNowButtonStyle(isDarkMode, stockLeft < 1)}
+                  disabled={stockLeft < 1}
+                  onClick={() => {
+                    if (stockLeft >= quantity) {
+                      navigate('/checkout', {
+                        state: {
+                          product: {
+                            ...product,
+                            qty: quantity
+                          }
+                        }
+                      });
+                    } else {
+                      setToastMessage('Not enough stock for this product!');
+                      setShowToast(true);
+                      setTimeout(() => setShowToast(false), 2000);
                     }
-                  }
-                });
-              } else {
-                setToastMessage('Not enough stock for this product!');
-                setShowToast(true);
-                setTimeout(() => setShowToast(false), 2000);
-              }
-            }}
-          >
-            Buy Now
-          </button>
-        </div>
-      </div>
+                  }}
+                >
+                  Buy Now
+                </button>
+              </div>
+            </div>
+          </div>
     </div>
   );
 };

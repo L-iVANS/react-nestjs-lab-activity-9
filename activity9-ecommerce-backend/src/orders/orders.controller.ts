@@ -4,7 +4,11 @@ import { JwtGuard } from '../auth/guards/jwt.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../utils/enums/user-role.enum';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { CreateOrderDto } from './dto/create-order.dto';
 
+@ApiTags('Orders')
+@ApiBearerAuth()
 @Controller('orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
@@ -14,14 +18,13 @@ export class OrdersController {
    * POST /orders/validate
    */
   @Post('validate')
+  @ApiOperation({ summary: 'Validate order before checkout' })
+  @ApiResponse({ status: 200, description: 'Order validation result' })
   async validateOrder(
-    @Body()
-    body: {
-      items: Array<{ name: string; price: number; qty: number }>;
-    },
+    @Body('items') items: Array<{ name: string; price: number; qty: number }>,
   ) {
     try {
-      await this.ordersService.validateOrder(body.items);
+      await this.ordersService.validateOrder(items);
       return { valid: true };
     } catch (error) {
       if (error instanceof BadRequestException) {
@@ -38,23 +41,11 @@ export class OrdersController {
    */
   @UseGuards(JwtGuard)
   @Post()
+  @ApiOperation({ summary: 'Create new order' })
+  @ApiResponse({ status: 201, description: 'Order created successfully' })
   async createOrder(
     @Request() req,
-    @Body()
-    body: {
-      items: Array<{ name: string; price: number; qty: number }>;
-      shippingInfo: {
-        fullName: string;
-        email: string;
-        phone: string;
-        address: string;
-        city: string;
-        state: string;
-        zipCode: string;
-      };
-      total: number;
-      paymentMethod: string;
-    },
+    @Body() body: CreateOrderDto,
   ) {
     const user = req.user;
     return await this.ordersService.createOrder(
@@ -73,6 +64,8 @@ export class OrdersController {
    */
   @UseGuards(JwtGuard)
   @Get()
+  @ApiOperation({ summary: "Get user's orders" })
+  @ApiResponse({ status: 200, description: 'List of user orders' })
   async getUserOrders(@Request() req) {
     return await this.ordersService.getUserOrders(req.user.id);
   }
@@ -84,6 +77,8 @@ export class OrdersController {
    */
   @UseGuards(JwtGuard)
   @Get(':id')
+  @ApiOperation({ summary: 'Get specific order' })
+  @ApiResponse({ status: 200, description: 'Order details' })
   async getOrder(@Request() req, @Param('id') id: number) {
     const isAdmin = req.user.role === UserRole.ADMIN;
     return await this.ordersService.getOrderById(id, req.user.id, isAdmin);
@@ -98,6 +93,8 @@ export class OrdersController {
   @UseGuards(JwtGuard, RolesGuard)
   @Roles([UserRole.ADMIN, UserRole.CLIENT])
   @Patch(':id/status')
+  @ApiOperation({ summary: 'Update order status' })
+  @ApiResponse({ status: 200, description: 'Order status updated' })
   async updateOrderStatus(
     @Request() req,
     @Param('id') id: number,
@@ -114,6 +111,8 @@ export class OrdersController {
    */
   @UseGuards(JwtGuard)
   @Post(':id/cancel')
+  @ApiOperation({ summary: 'Cancel order (remove from cart)' })
+  @ApiResponse({ status: 200, description: 'Order cancelled/removed from cart' })
   async cancelOrder(@Request() req, @Param('id') id: number) {
     const isAdmin = req.user.role === UserRole.ADMIN;
     return await this.ordersService.cancelOrder(id, req.user.id, isAdmin);

@@ -59,10 +59,10 @@ const SideNav = ({ selectedCategory, setSelectedCategory, selectedProduct, setSe
 	};
 
 	return (
-		<div className={`w-64 h-screen border-r px-6 py-8 flex flex-col shadow-sm transition-all duration-300 ${
+		<div className={`w-64 h-screen border-r px-6 py-8 flex flex-col shadow-xl transition-all duration-300 rounded-3xl ${
 			isDarkMode 
-				? 'bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 border-gray-700' 
-				: 'bg-gradient-to-b from-indigo-50 via-white to-indigo-100 border-indigo-100'
+				? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border-gray-700' 
+				: 'bg-gradient-to-br from-indigo-100 via-white to-indigo-200 border-indigo-100'
 		}`}>
 			<div className="flex-1">
 				   <h2 className={`font-bold text-lg mb-10 tracking-wide transition-colors duration-300 ${

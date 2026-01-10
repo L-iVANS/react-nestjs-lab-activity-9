@@ -4,7 +4,7 @@ import { createProduct, updateProduct } from "../../services/productService";
 import Header from "../layout/header";
 import SideNav from "../layout/sideNav";
 import Pagination from "../layout/Pagination";
-import AddProductModal from "../product/AddProductModal";
+import AddProductModal from "../modals/AddProductModal";
 import ProductGrid from "../product/ProductGrid";
 import ArrowDown from "../../assets/icons/arrowDown.png";
 import useProducts from "../../hooks/useProducts";
@@ -13,7 +13,7 @@ import filterByPrice from "../../utils/filterByPrice";
 import useAddProductForm from "../../hooks/useAddProductForm";
 import useArchiveConfirm from "../../hooks/useArchiveConfirm";
 import ArchiveConfirmModal from "../modals/ArchiveConfirmModal";
-import ArchivedProducts from "../archive/ArchivedProducts";
+import ArchivedProducts from "./ArchivedProducts";
 import { useTheme } from "../../context/ThemeContext";
 
 const categories = [

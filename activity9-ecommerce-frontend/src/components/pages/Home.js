@@ -172,7 +172,7 @@ const Home = () => {
           isDarkMode ? 'bg-gray-800/90' : 'bg-white/80'
         }`}>
           <div className="flex items-center justify-between m-6">
-            {/* Filter by Price - left */}
+            {/* Filter by Price - left (copied from AdminHome) */}
             <div
               className={`text-lg font-bold flex items-center gap-2 select-none cursor-pointer w-fit px-4 py-2 rounded-xl shadow-sm transition ${
                 isDarkMode 
@@ -213,7 +213,6 @@ const Home = () => {
                 }}
                 title="View Purchase History"
               >
-      
                 <span style={{ fontWeight: 700, fontSize: '0.92rem', color: isDarkMode ? '#a78bfa' : '#7c3aed', letterSpacing: '0.02em', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <HistoryIcon size={22} color={isDarkMode ? '#a78bfa' : '#7c3aed'} />
                   Purchase History

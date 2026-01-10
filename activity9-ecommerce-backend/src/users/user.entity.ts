@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { UserRole } from '../utils/enums/user-role.enum';
 
-@Entity('users')
+@Entity('ecommerce_users')
 export class User {
   @PrimaryGeneratedColumn()
   id: number;

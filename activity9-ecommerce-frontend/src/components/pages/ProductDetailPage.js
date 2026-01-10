@@ -4,7 +4,6 @@ import { useAuth } from '../../context/AuthContext';
 import { getProductById } from '../../services/productService';
 import { useTheme } from '../../context/ThemeContext';
 import Header from '../layout/header';
-import SideNav from '../layout/sideNav';
 import ProductDetail from '../product/ProductDetail';
 
 const ProductDetailPage = () => {
@@ -64,13 +63,20 @@ const ProductDetailPage = () => {
   return (
     <>
       <Header isAdmin={isAdmin} isGuest={isGuest} onHome={handleBack} />
-      <div className="flex">
-        <SideNav isAdmin={isAdmin} />
-        <div className="flex-1 p-8">
+      <div className={`flex min-h-screen rounded-3xl shadow-2xl p-4 md:p-8 transition-all duration-300 ${
+        isDarkMode 
+          ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' 
+          : 'bg-gradient-to-br from-indigo-100 via-white to-indigo-200'
+      }`}>
+        <div className={`flex-1 min-h-0 flex flex-col relative rounded-3xl shadow-xl mx-2 md:mx-6 p-4 md:p-8 transition-all duration-300 ${
+          isDarkMode ? 'bg-gray-800/90' : 'bg-white/80'
+        }`}>
           <button 
             onClick={handleBack}
-            className={`mb-6 px-4 py-2 rounded transition font-semibold ${
-              isDarkMode ? 'bg-gray-700 text-gray-100 hover:bg-gray-600' : 'bg-gray-200 text-gray-900 hover:bg-gray-300'
+            className={`mb-6 px-6 py-2.5 rounded-lg transition font-semibold w-fit flex items-center gap-2 border-2 ${
+              isDarkMode 
+                ? 'bg-gray-700/80 text-gray-100 hover:bg-gray-600 border-gray-600 hover:border-gray-500 shadow-lg' 
+                : 'bg-purple-100 text-purple-900 hover:bg-purple-200 border-purple-300 hover:border-purple-400 shadow-md hover:shadow-lg'
             }`}
           >
             ← Back to Products
