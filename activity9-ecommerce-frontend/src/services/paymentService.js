@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:3001";
+const API_BASE_URL = "http://localhost:3000";
 
 export const createPaymentLink = async ({ amount, description, successUrl, failedUrl }) => {
   try {
