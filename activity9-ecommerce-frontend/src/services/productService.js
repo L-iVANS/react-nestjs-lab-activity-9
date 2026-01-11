@@ -1,5 +1,21 @@
 const API_URL = 'http://localhost:3000';
 
+// Get all products (public - no auth required)
+export const getPublicProducts = async () => {
+  const response = await fetch(`${API_URL}/products`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch products');
+  }
+
+  return response.json();
+};
+
 export const getAllProducts = async (token) => {
   const response = await fetch(`${API_URL}/products`, {
     method: 'GET',

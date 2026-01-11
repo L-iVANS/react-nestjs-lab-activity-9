@@ -10,6 +10,7 @@ import filterByPrice from "../../utils/filterByPrice";
 import ArrowDown from "../../assets/icons/arrowDown.png";
 import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
+import { getPublicProducts } from "../../services/productService";
 
 const GuestHome = () => {
   const navigate = useNavigate();
@@ -36,9 +37,7 @@ const GuestHome = () => {
   React.useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch('http://localhost:3000/products');
-        if (!response.ok) throw new Error('Failed to fetch products');
-        const data = await response.json();
+        const data = await getPublicProducts();
         setProducts(data);
       } catch (error) {
         console.error('Error fetching products:', error);
