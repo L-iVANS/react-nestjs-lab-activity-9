@@ -6,6 +6,7 @@ import SideNav from "../layout/sideNav";
 import Pagination from "../layout/Pagination";
 import AddProductModal from "../modals/AddProductModal";
 import ProductGrid from "../product/ProductGrid";
+import Toast from "../common/Toast";
 import ArrowDown from "../../assets/icons/arrowDown.png";
 import useProducts from "../../hooks/useProducts";
 import useProductFilter from "../../hooks/useProductFilter";
@@ -199,6 +200,9 @@ const AdminHome = () => {
 
   return (
     <>
+      {toast && (
+        <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
+      )}
       <Header isAdmin={true} onHome={handleHome} />
       <div className={`flex min-h-screen rounded-3xl shadow-2xl p-4 md:p-8 transition-all duration-300 ${
         isDarkMode 
@@ -234,7 +238,11 @@ const AdminHome = () => {
                 </div>
                 <button
                   onClick={() => formState.openModal()}
-                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+                  className={`px-6 py-2.5 rounded-xl font-semibold shadow-md hover:shadow-lg transition-all ${
+                    isDarkMode 
+                      ? 'bg-indigo-600 text-white hover:bg-indigo-500' 
+                      : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700'
+                  }`}
                 >
                   Add Product
                 </button>

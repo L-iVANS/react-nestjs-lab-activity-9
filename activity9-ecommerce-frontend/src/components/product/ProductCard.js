@@ -1,10 +1,12 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import Toast from "../common/Toast";
 import AddToCartModal from "../modals/AddToCartModal";
 import addToCartIcon from "../../assets/icons/qlementine-icons_add-to-cart-16.png";
 import { useTheme } from "../../context/ThemeContext";
 
 const ProductCard = ({ productId, productName, productPrice, quantity, images, isAdmin, isGuest, onRemove, onAddToCart, onUpdate }) => {
+    const navigate = useNavigate();
     const { isDarkMode } = useTheme();
     const [toast, setToast] = React.useState(null);
   const [showAddModal, setShowAddModal] = React.useState(false);
@@ -201,7 +203,11 @@ const ProductCard = ({ productId, productName, productPrice, quantity, images, i
               {/* Edit button directly under Qty for admin */}
               {!editing && (
                 <button
-                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-xs font-semibold mx-auto block"
+                  className={`px-4 py-2 rounded-xl font-semibold shadow-md hover:shadow-lg transition-all mx-auto block ${
+                    isDarkMode 
+                      ? 'bg-indigo-600 text-white hover:bg-indigo-500' 
+                      : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700'
+                  }`}
                   style={{ maxWidth: '180px', width: '100%' }}
                   onClick={handleEdit}
                 >
@@ -213,9 +219,16 @@ const ProductCard = ({ productId, productName, productPrice, quantity, images, i
         ) : (
           <>
             <button
-              className={`text-white font-bold py-2 px-6 rounded-full shadow-lg transition-all duration-200 ${isGuest || quantity === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-indigo-700 bg-indigo-600 scale-105'}`}
+              className={`text-white font-bold py-2 px-6 rounded-full shadow-lg transition-all duration-200 ${quantity === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-indigo-700 bg-indigo-600 scale-105 cursor-pointer'}`}
               style={{ backgroundColor: quantity === 0 ? '#d1d5db' : '#6366f1', fontSize: '1rem', letterSpacing: '0.01em', boxShadow: '0 2px 12px 0 #6366f1aa' }}
-              disabled={isGuest || quantity === 0}
+              disabled={quantity === 0}
+              onClick={() => {
+                if (quantity > 0) {
+                  if (isGuest) {
+                    navigate('/login');
+                  }
+                }
+              }}
             >
               Buy Now
             </button>

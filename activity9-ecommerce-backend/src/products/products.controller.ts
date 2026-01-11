@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards, BadRequestException } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { Product } from './product.entity';
 import { JwtGuard } from '../auth/guards/jwt.guard';
@@ -47,12 +47,16 @@ export class ProductsController {
   @ApiOperation({ summary: 'Create a new product' })
   @ApiResponse({ status: 201, description: 'Product created successfully', type: ProductResponseDto })
   async create(@Body() productData: CreateProductDto): Promise<ProductResponseDto> {
-    // Service handles stringification, pass data as-is
-    const product = await this.productsService.create(productData as any);
-    return {
-      ...product,
-      images: Array.isArray(product.images) ? product.images : (typeof product.images === 'string' ? JSON.parse(product.images) : [])
-    };
+    try {
+      // Service handles stringification, pass data as-is
+      const product = await this.productsService.create(productData as any);
+      return {
+        ...product,
+        images: Array.isArray(product.images) ? product.images : (typeof product.images === 'string' ? JSON.parse(product.images) : [])
+      };
+    } catch (error) {
+      throw new BadRequestException(error.message || 'Failed to create product');
+    }
   }
 
   // PUT update product - Admin only

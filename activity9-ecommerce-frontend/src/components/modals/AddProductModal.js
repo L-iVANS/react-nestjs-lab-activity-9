@@ -25,27 +25,90 @@ const AddProductModal = ({
   removeImage,
 }) => {
   const { isDarkMode } = useTheme();
+  const [showConfirm, setShowConfirm] = React.useState(false);
+  
+  // Check if there's any unsaved data
+  const hasUnsavedData = () => {
+    return (
+      newProduct?.name?.trim() ||
+      newProduct?.description?.trim() ||
+      newProduct?.price ||
+      newProduct?.category ||
+      newProduct?.product ||
+      newProduct?.quantity ||
+      (imagePreviews && imagePreviews.length > 0)
+    );
+  };
+
+  const handleCloseClick = () => {
+    if (hasUnsavedData()) {
+      setShowConfirm(true);
+    } else {
+      onClose();
+    }
+  };
+
+  const handleConfirmClose = () => {
+    setShowConfirm(false);
+    setTimeout(() => {
+      onClose();
+    }, 100);
+  };
   
   if (!show) return null;
 
   return (
     <>
-      {/* No overlay, modal only */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
-        <div className={`shadow-xl p-8 relative ${
-          isDarkMode ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' : 'bg-gradient-to-br from-indigo-100 via-white to-indigo-200'
-        }`} style={{ borderRadius: '0 0 1rem 0', width: '600px', maxWidth: '95vw' }}>
+      {/* Confirmation Dialog */}
+      {showConfirm && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50">
+          <div className={`p-6 rounded-lg shadow-lg ${
+            isDarkMode ? 'bg-gray-800' : 'bg-white'
+          }`} style={{ width: '350px' }}>
+            <h3 className={`text-lg font-bold mb-4 ${
+              isDarkMode ? 'text-white' : 'text-gray-800'
+            }`}>Discard Changes?</h3>
+            <p className={`mb-6 ${
+              isDarkMode ? 'text-gray-300' : 'text-gray-600'
+            }`}>You have unsaved changes. Are you sure you want to close?</p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="px-4 py-2 bg-gray-400 text-white rounded-md hover:bg-gray-500 transition"
+              >
+                Keep Editing
+              </button>
+              <button
+                onClick={handleConfirmClose}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
+              >
+                Discard
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal with backdrop */}
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm">
+        <div className={`shadow-2xl p-8 relative rounded-3xl border-2 ${
+          isDarkMode 
+            ? 'bg-gradient-to-br from-gray-800 via-gray-900 to-gray-800 border-gray-700' 
+            : 'bg-gradient-to-br from-white via-indigo-50 to-white border-indigo-200'
+        }`} style={{ width: '600px', maxWidth: '95vw', maxHeight: '90vh', overflowY: 'auto' }}>
           <button
-            className={`absolute top-2 right-2 hover:text-gray-700 text-2xl font-bold ${
-              isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-400 hover:text-gray-700'
+            className={`absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full transition-all text-2xl font-bold ${
+              isDarkMode 
+                ? 'text-gray-400 hover:text-white hover:bg-gray-700' 
+                : 'text-gray-500 hover:text-gray-900 hover:bg-gray-200'
             }`}
-            onClick={onClose}
+            onClick={handleCloseClick}
             aria-label="Close"
           >
             &times;
           </button>
-          <h3 className={`text-xl font-bold mb-4 text-center ${
-            isDarkMode ? 'text-indigo-400' : 'text-indigo-600'
+          <h3 className={`text-2xl font-bold mb-6 text-center ${
+            isDarkMode ? 'text-indigo-400' : 'text-indigo-700'
           }`}>Add New Product</h3>
           <form onSubmit={onAdd} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Image Upload */}
@@ -53,14 +116,14 @@ const AddProductModal = ({
               <label className={`block text-sm font-medium mb-1 ${
                 isDarkMode ? 'text-gray-300' : 'text-gray-700'
               }`}>Select Image</label>
-              <label className={`w-full flex items-center justify-center px-3 py-2 border rounded-md cursor-pointer transition ${
+              <label className={`w-full flex items-center justify-center px-4 py-3 border-2 rounded-xl cursor-pointer transition-all shadow-md hover:shadow-lg ${
                 isDarkMode 
-                  ? 'bg-gray-700 hover:bg-gray-600 text-gray-200 border-gray-600' 
-                  : 'bg-indigo-50 hover:bg-indigo-100 text-gray-700 border-indigo-200'
+                  ? 'bg-gray-700 hover:bg-gray-600 text-gray-200 border-gray-600 hover:border-indigo-500' 
+                  : 'bg-gradient-to-r from-indigo-50 to-purple-50 hover:from-indigo-100 hover:to-purple-100 text-gray-700 border-indigo-300 hover:border-indigo-400'
               }`}>
-                <span className={`font-semibold ${
-                  isDarkMode ? 'text-indigo-400' : 'text-indigo-600'
-                }`}>Select Image</span>
+                <span className={`font-bold text-base ${
+                  isDarkMode ? 'text-indigo-400' : 'text-indigo-700'
+                }`}>Select Images</span>
                 <input
                   type="file"
                   name="images"
@@ -105,8 +168,11 @@ const AddProductModal = ({
                 name="category"
                 value={newProduct?.category || ""}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 bg-white text-gray-900"
-                style={{ borderColor: isDarkMode ? '#4B5563' : '#D1D5DB' }}
+                className={`w-full px-4 py-2.5 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition-all ${
+                  isDarkMode 
+                    ? 'bg-gray-700 text-white border-gray-600 hover:border-gray-500' 
+                    : 'bg-white text-gray-900 border-gray-300 hover:border-indigo-400'
+                }`}
               >
                 <option value="">Select category</option>
                 {categories.map((cat) => (
@@ -128,8 +194,11 @@ const AddProductModal = ({
                   name="product"
                   value={newProduct?.product || ""}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 bg-white text-gray-900"
-                  style={{ borderColor: isDarkMode ? '#4B5563' : '#D1D5DB' }}
+                  className={`w-full px-4 py-2.5 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition-all ${
+                    isDarkMode 
+                      ? 'bg-gray-700 text-white border-gray-600 hover:border-gray-500' 
+                      : 'bg-white text-gray-900 border-gray-300 hover:border-indigo-400'
+                  }`}
                 >
                   <option value="">Select product</option>
                   {categories.find(c => c.name === newProduct.category)?.products.map((prod) => (
@@ -153,8 +222,11 @@ const AddProductModal = ({
                 value={newProduct?.name || ""}
                 onChange={handleInputChange}
                 placeholder="Enter product name"
-                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 bg-white text-gray-900"
-                style={{ borderColor: isDarkMode ? '#4B5563' : '#D1D5DB' }}
+                className={`w-full px-4 py-2.5 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition-all ${
+                  isDarkMode 
+                    ? 'bg-gray-700 text-white border-gray-600 placeholder-gray-400 hover:border-gray-500' 
+                    : 'bg-white text-gray-900 border-gray-300 placeholder-gray-400 hover:border-indigo-400'
+                }`}
               />
               {errors?.name && (
                 <div className="text-red-600 text-xs mt-1">{errors.name}</div>
@@ -172,8 +244,11 @@ const AddProductModal = ({
                 value={newProduct?.price || ""}
                 onChange={handleInputChange}
                 placeholder="Enter price"
-                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 bg-white text-gray-900"
-                style={{ borderColor: isDarkMode ? '#4B5563' : '#D1D5DB' }}
+                className={`w-full px-4 py-2.5 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition-all ${
+                  isDarkMode 
+                    ? 'bg-gray-700 text-white border-gray-600 placeholder-gray-400 hover:border-gray-500' 
+                    : 'bg-white text-gray-900 border-gray-300 placeholder-gray-400 hover:border-indigo-400'
+                }`}
               />
               {errors?.price && (
                 <div className="text-red-600 text-xs mt-1">{errors.price}</div>
@@ -192,8 +267,11 @@ const AddProductModal = ({
                 onChange={handleInputChange}
                 placeholder="Enter quantity"
                 min="0"
-                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 bg-white text-gray-900"
-                style={{ borderColor: isDarkMode ? '#4B5563' : '#D1D5DB' }}
+                className={`w-full px-4 py-2.5 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition-all ${
+                  isDarkMode 
+                    ? 'bg-gray-700 text-white border-gray-600 placeholder-gray-400 hover:border-gray-500' 
+                    : 'bg-white text-gray-900 border-gray-300 placeholder-gray-400 hover:border-indigo-400'
+                }`}
               />
               {errors?.quantity && (
                 <div className="text-red-600 text-xs mt-1">{errors.quantity}</div>
@@ -201,17 +279,25 @@ const AddProductModal = ({
             </div>
 
             {/* Submit Button */}
-            <div className="md:col-span-2 flex gap-2 justify-end">
+            <div className="md:col-span-2 flex gap-3 justify-end mt-2">
               <button
                 type="button"
-                onClick={onClose}
-                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition"
+                onClick={handleCloseClick}
+                className={`px-6 py-2.5 rounded-xl font-semibold transition-all shadow-md hover:shadow-lg ${
+                  isDarkMode 
+                    ? 'bg-gray-600 text-white hover:bg-gray-500' 
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition disabled:bg-gray-400"
+                className={`px-6 py-2.5 rounded-xl font-semibold transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed ${
+                  isDarkMode 
+                    ? 'bg-indigo-600 text-white hover:bg-indigo-500' 
+                    : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700'
+                }`}
                 disabled={loading}
               >
                 {loading ? 'Adding...' : 'Add Product'}

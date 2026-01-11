@@ -47,6 +47,15 @@ export class ProductsService {
       throw new Error('Product name is required');
     }
     
+    // Check if product with same name already exists (case-insensitive)
+    const existingProduct = await this.productsRepository
+      .createQueryBuilder('product')
+      .where('LOWER(product.name) = LOWER(:name)', { name: productData.name.trim() })
+      .getOne();
+    if (existingProduct) {
+      throw new Error('Product with this name already exists');
+    }
+    
     if (!productData.price || productData.price <= 0) {
       throw new Error('Product price must be greater than 0');
     }

@@ -86,8 +86,8 @@ const SideNav = ({ selectedCategory, setSelectedCategory, selectedProduct, setSe
 									src={ArrowDown}
 									alt="Arrow Down"
 									style={{ 
-										height: "0.8em", 
-										width: "0.8em", 
+										height: "0.5em", 
+										width: "0.5em", 
 										verticalAlign: "middle",
 										filter: isDarkMode ? 'brightness(0) invert(1)' : 'none'
 									}}
